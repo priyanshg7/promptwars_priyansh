@@ -1,26 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   Mic, 
   MicOff, 
   Sparkles, 
-  Layers, 
   BookOpen, 
-  Clock, 
   Flame, 
-  CheckSquare, 
-  FileText,
   Activity, 
   Send,
   Loader2,
   AlertCircle,
-  HelpCircle,
-  Wind,
   ShieldCheck,
   TrendingUp,
-  Volume2,
   User,
-  Settings,
   X
 } from 'lucide-react';
 import { 
@@ -32,9 +24,7 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  Legend,
-  AreaChart,
-  Area
+  Legend
 } from 'recharts';
 import { db } from '../firebase';
 import ExamVault from './ExamVault';
@@ -53,9 +43,16 @@ const DEFAULT_CHART_DATA = [
   { day: 'Sun', score: 75, burnout: 40 }
 ];
 
-export default function Dashboard({ profile, onUpdateProfile, onLogout, onProfileToggle }) {
-  const { t, i18n } = useTranslation();
+import { generateSubjectData } from '../utils/helpers.js';
+
+
+export default function Dashboard({ profile, onUpdateProfile, onProfileToggle }) {
+  const { t } = useTranslation();
   
+  // Recharts state
+  const [chartData, setChartData] = useState(DEFAULT_CHART_DATA);
+  const [subjectData, setSubjectData] = useState([]);
+
   // Sub-modules navigation tabs (Planner / Vault)
   const [activeSubTab, setActiveSubTab] = useState('planner'); 
   
@@ -87,61 +84,6 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout, onProfil
   // Countdown States
   const [countdowns, setCountdowns] = useState({});
 
-  // Recharts state
-  const [chartData, setChartData] = useState(DEFAULT_CHART_DATA);
-  const [subjectData, setSubjectData] = useState([]);
-
-  const getSubjectsForExam = (exams) => {
-    if (!exams || exams.length === 0) return ['Physics', 'Chemistry', 'Mathematics'];
-    const primaryExam = exams[0].toLowerCase();
-    if (primaryExam.includes('jee') || primaryExam.includes('gate') || primaryExam.includes('board exam class 12')) {
-      return ['Physics', 'Chemistry', 'Mathematics'];
-    }
-    if (primaryExam.includes('neet')) {
-      return ['Physics', 'Chemistry', 'Biology'];
-    }
-    if (primaryExam.includes('upsc')) {
-      return ['General Studies', 'CSAT', 'Optional Subject'];
-    }
-    if (primaryExam.includes('cat')) {
-      return ['Quantitative Ability', 'DILR', 'Verbal Ability'];
-    }
-    if (primaryExam.includes('boards_10') || primaryExam.includes('class 10')) {
-      return ['Science', 'Mathematics', 'Social Science'];
-    }
-    if (primaryExam.includes('cuet')) {
-      return ['Language Test', 'Domain Subjects', 'General Test'];
-    }
-    return ['Subject A', 'Subject B', 'Subject C'];
-  };
-
-  const generateSubjectData = (tests, currentBurnout) => {
-    const subjects = getSubjectsForExam(profile.targetExams);
-    const completedTests = tests.filter(t => t.status === 'completed');
-    let avgScorePercent = 65;
-    if (completedTests.length > 0) {
-      const sum = completedTests.reduce((acc, t) => acc + (t.percentage || 50), 0);
-      avgScorePercent = Math.round(sum / completedTests.length);
-    }
-
-    return subjects.map((subject, idx) => {
-      let scoreVar = 0;
-      let stressVar = 0;
-      if (idx === 0) { scoreVar = 5; stressVar = -5; }
-      else if (idx === 1) { scoreVar = -12; stressVar = 15; }
-      else { scoreVar = 8; stressVar = -8; }
-
-      const finalScore = Math.max(30, Math.min(100, avgScorePercent + scoreVar));
-      const finalStress = Math.max(10, Math.min(100, currentBurnout + stressVar));
-
-      return {
-        subject,
-        Score: finalScore,
-        Stress: finalStress
-      };
-    });
-  };
-
   // Check Web Speech API availability
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -164,8 +106,7 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout, onProfil
     }
   }, [profile.language]);
 
-  // Load check-in data and build analytics charts
-  const loadCheckinData = async () => {
+  const loadCheckinData = useCallback(async () => {
     try {
       const snap = await db.getDocs(`users/${profile.uid}/checkins`);
       const checkinList = [];
@@ -203,15 +144,15 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout, onProfil
       }
 
       // Generate subject-wise performance data
-      const subData = generateSubjectData(testList, profile.burnoutScore || 40);
+      const subData = generateSubjectData(testList, profile.burnoutScore || 40, profile.targetExams);
       setSubjectData(subData);
     } catch (err) {
       console.error("Failed to load checkins:", err);
     }
-  };
+  }, [profile.uid, profile.burnoutScore, profile.targetExams]);
 
   // Load Weekly AI Insights
-  const loadWeeklyInsights = async () => {
+  const loadWeeklyInsights = useCallback(async () => {
     setLoadingInsights(true);
     try {
       const testSnap = await db.getDocs(`users/${profile.uid}/tests`);
@@ -236,7 +177,7 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout, onProfil
       } else {
         throw new Error("Insights failed");
       }
-    } catch (err) {
+    } catch {
       // Mock correlation fallback
       setInsights([
         {
@@ -257,12 +198,12 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout, onProfil
     } finally {
       setLoadingInsights(false);
     }
-  };
+  }, [profile.uid, profile.language]);
 
   useEffect(() => {
     loadCheckinData();
     loadWeeklyInsights();
-  }, [profile]);
+  }, [loadCheckinData, loadWeeklyInsights]);
 
   // Handle countdown updates
   useEffect(() => {
@@ -412,7 +353,7 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout, onProfil
       } else {
         throw new Error("Chat failed");
       }
-    } catch (err) {
+    } catch {
       setChatHistory(prev => [...prev, { role: 'assistant', text: "Sorry, I had trouble parsing that. Tell me how your revision is going." }]);
     } finally {
       setChatLoading(false);
@@ -488,6 +429,7 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout, onProfil
             onClick={() => setShowVentModal(true)}
             className="w-10 h-10 rounded-md bg-[#00A389]/10 border border-[#00A389]/20 hover:bg-[#00A389] hover:text-white text-[#00A389] flex items-center justify-center transition-all cursor-pointer focus:ring-2 focus:ring-[#00A389] active:scale-95 shadow-sm"
             title={t('quick_vent')}
+            aria-label={t('quick_vent')}
           >
             <Mic className="w-5 h-5" />
           </button>
@@ -497,6 +439,7 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout, onProfil
             onClick={onProfileToggle}
             className="w-10 h-10 rounded-md bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-600 hover:text-white text-indigo-400 flex items-center justify-center transition-all cursor-pointer focus:ring-2 focus:ring-indigo-500 active:scale-95 shadow-sm"
             title="Profile Settings"
+            aria-label="Profile Settings"
           >
             <User className="w-5 h-5" />
           </button>
@@ -826,6 +769,7 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout, onProfil
                 type="submit"
                 disabled={chatLoading || !chatMessage.trim()}
                 className="p-1.5 bg-[#00A389] hover:bg-[#00927a] text-white rounded-md transition-all cursor-pointer disabled:opacity-50"
+                aria-label="Send message"
               >
                 <Send className="w-3.5 h-3.5" />
               </button>
@@ -859,6 +803,7 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout, onProfil
                   setShowVentModal(false);
                 }} 
                 className="text-slate-400 hover:text-white p-1 hover:bg-slate-800 rounded transition-colors cursor-pointer"
+                aria-label="Close"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -875,6 +820,7 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout, onProfil
                     ? 'bg-red-500 border-red-500 text-white animate-pulse shadow-red-500/20' 
                     : 'bg-[#00A389]/10 border-[#00A389]/20 text-[#00A389] hover:bg-[#00A389] hover:text-white'
                 }`}
+                aria-label={isRecording ? "Stop voice recording" : "Start voice recording"}
               >
                 {isRecording ? <MicOff className="w-6 h-6 animate-bounce" /> : <Mic className="w-6 h-6" />}
               </button>

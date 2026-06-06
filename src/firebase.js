@@ -1,18 +1,7 @@
 // Client-side local database and authentication adaptor using localStorage and Gemini API
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { parsePath } from './utils/helpers.js';
 
-// Parse collections from path formats like "users/uid/tasks"
-const parsePath = (path) => {
-  const parts = path.split('/');
-  if (parts.length >= 3) {
-    return {
-      userId: parts[1],
-      collection: parts[2],
-      id: parts[3] || null
-    };
-  }
-  return { userId: null, collection: path, id: null };
-};
 
 const getGeminiApiKey = () => {
   return localStorage.getItem('stressradar_gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
@@ -27,7 +16,7 @@ const getMockSuggestedTasks = (taskTitle) => {
   ];
 };
 
-const getMockVentResponse = (text) => {
+const getMockVentResponse = (_text) => {
   return {
     stress_level: "medium",
     trigger: "Mock exam preparation pressure",
@@ -229,7 +218,7 @@ if (typeof window !== 'undefined') {
       if (options && options.body) {
         try {
           payload = JSON.parse(options.body);
-        } catch (e) {
+        } catch {
           // Body is not JSON
         }
       }

@@ -5,7 +5,9 @@ import User from '../models/User.js';
 import auth from '../middleware/auth.js';
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'pact_super_secret_jwt_key_2026';
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production'
+  ? (() => { throw new Error('JWT_SECRET environment variable is required in production mode!'); })()
+  : 'stressradar_local_development_secure_jwt_fallback_key_2026');
 
 // @route   POST /api/auth/register
 // @desc    Register a new user

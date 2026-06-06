@@ -1,13 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   Smile, 
-  Activity, 
-  Clock, 
   X, 
   Zap, 
   Moon, 
-  Sparkles, 
   Compass, 
   FlameKindling,
   Timer,
@@ -55,7 +52,6 @@ export default function DailyCheckin({ user, onClose, onCheckinComplete }) {
   const [gameState, setGameState] = useState('idle'); // 'idle' | 'waiting' | 'ready' | 'clicked'
   const [startTime, setStartTime] = useState(0);
   const [reactionTime, setReactionTime] = useState(null);
-  const [testCompleted, setTestCompleted] = useState(false);
   const [tapTimeout, setTapTimeout] = useState(null);
 
   useEffect(() => {
@@ -94,7 +90,6 @@ export default function DailyCheckin({ user, onClose, onCheckinComplete }) {
       const duration = Date.now() - startTime;
       setReactionTime(duration);
       setGameState('clicked');
-      setTestCompleted(true);
     }
   };
 

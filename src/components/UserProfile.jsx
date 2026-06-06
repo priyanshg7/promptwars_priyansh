@@ -1,10 +1,7 @@
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 import { 
   User, 
   Lock, 
-  Mail, 
-  BookOpen, 
   ShieldCheck, 
   Loader2, 
   Check, 
@@ -27,7 +24,6 @@ const EXAMS = [
 ];
 
 export default function UserProfile({ profile, onUpdateProfile, onBack }) {
-  const { t } = useTranslation();
   
   // Profile state
   const [name, setName] = useState(profile.name || '');

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Wind, Play, Pause, RotateCcw, Check, Sparkles } from 'lucide-react';
 
@@ -87,7 +87,7 @@ export default function BreathingCard({ onGroundingFeedback }) {
           <Wind className="w-3.5 h-3.5 animate-pulse" />
           {t('breathing_card')}
         </span>
-        <span className="text-[10px] font-space font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+        <span className="text-[10px] font-space font-bold text-slate-450 bg-slate-900/60 border border-slate-850 px-2.5 py-0.5 rounded">
           Cycle {completedCycles}/4
         </span>
       </div>
@@ -96,12 +96,12 @@ export default function BreathingCard({ onGroundingFeedback }) {
         <div className="flex flex-col items-center justify-center py-6 gap-6">
           
           {/* Animated Circle Container */}
-          <div className="w-40 h-40 flex items-center justify-center relative">
+          <div className="w-40 h-40 flex items-center justify-center relative" aria-live="polite">
             
             {/* Pulsing visual circle */}
             <div 
               className={`w-16 h-16 rounded-full border border-[#00A389]/40 flex items-center justify-center text-center transition-all duration-[4000ms] ease-in-out ${
-                isActive ? currentStep.state : 'bg-slate-50'
+                isActive ? currentStep.state : 'bg-slate-900/60'
               }`}
               style={{
                 boxShadow: isActive ? '0 0 30px rgba(0, 163, 137, 0.15)' : 'none'
@@ -109,11 +109,11 @@ export default function BreathingCard({ onGroundingFeedback }) {
             >
               {/* Inner details */}
               <div className="flex flex-col items-center">
-                <span className="text-[10px] font-space font-bold text-slate-500 uppercase tracking-widest">
+                <span className="text-[10px] font-space font-bold text-slate-400 uppercase tracking-widest">
                   {isActive ? currentStep.text : 'Ready'}
                 </span>
                 {isActive && (
-                  <span className="text-xl font-bold font-space text-slate-800 mt-1">
+                  <span className="text-xl font-bold font-space text-white mt-1">
                     {timeLeft}s
                   </span>
                 )}
@@ -127,17 +127,19 @@ export default function BreathingCard({ onGroundingFeedback }) {
               onClick={handleToggle}
               className={`px-4 py-2 text-xs font-bold rounded-md transition-all flex items-center gap-1.5 cursor-pointer focus:ring-2 focus:ring-[#00A389] focus:outline-none ${
                 isActive 
-                  ? 'bg-slate-100 text-slate-700 border border-slate-200' 
+                  ? 'bg-slate-800 text-white border border-slate-700 hover:bg-slate-750' 
                   : 'bg-[#00A389] hover:bg-[#008e77] text-white shadow-sm'
               }`}
+              aria-label={isActive ? 'Pause breathing session' : 'Start breathing session'}
             >
               {isActive ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
               {isActive ? 'Pause' : 'Start Session'}
             </button>
             <button
               onClick={handleReset}
-              className="p-2 border border-slate-200 bg-slate-50 text-slate-500 hover:text-slate-800 rounded-md hover:bg-slate-100 transition-all cursor-pointer focus:ring-2 focus:ring-[#00A389]"
+              className="p-2 border border-slate-800 bg-slate-900 text-slate-400 hover:text-white rounded-md hover:bg-slate-800 transition-all cursor-pointer focus:ring-2 focus:ring-[#00A389]"
               title="Reset timer"
+              aria-label="Reset timer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
@@ -146,12 +148,12 @@ export default function BreathingCard({ onGroundingFeedback }) {
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-6 gap-4 animate-scale-up text-center">
-          <div className="w-10 h-10 rounded-full bg-emerald-50 border border-emerald-250 flex items-center justify-center text-[#00A389] mb-1">
+          <div className="w-10 h-10 rounded-full bg-emerald-950/40 border border-emerald-550/30 flex items-center justify-center text-[#00A389] mb-1">
             <Check className="w-5 h-5" />
           </div>
           <div className="flex flex-col gap-1">
-            <h5 className="text-sm font-bold text-slate-800">Session Completed</h5>
-            <p className="text-xs text-slate-500 max-w-[280px]">
+            <h5 className="text-sm font-bold text-white">Session Completed</h5>
+            <p className="text-xs text-slate-400 max-w-[280px]">
               Do you feel a bit more grounded and calm now?
             </p>
           </div>
@@ -166,15 +168,15 @@ export default function BreathingCard({ onGroundingFeedback }) {
               </button>
               <button
                 onClick={() => handleFeedback(false)}
-                className="px-4 py-1.5 bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-md transition-all cursor-pointer"
+                className="px-4 py-1.5 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-md transition-all cursor-pointer"
               >
                 No, Still Tense
               </button>
             </div>
           ) : (
-            <div className="mt-2 text-xs flex flex-col items-center gap-2">
-              <div className="p-3 bg-indigo-50 border border-indigo-200 text-indigo-750 rounded-md text-[11px] max-w-[300px] leading-relaxed flex gap-1.5">
-                <Sparkles className="w-4 h-4 shrink-0 mt-0.5 text-indigo-600" />
+            <div className="mt-2 text-xs flex flex-col items-center gap-2" aria-live="polite">
+              <div className="p-3 bg-indigo-950/40 border border-indigo-500/25 text-indigo-300 rounded-md text-[11px] max-w-[300px] leading-relaxed flex gap-1.5">
+                <Sparkles className="w-4 h-4 shrink-0 mt-0.5 text-[#00A389]" />
                 <span>
                   {feedbackAnswer === 'yes'
                     ? 'Wonderful! We adjusted your Burnout Score down by 6%. Keep maintaining deep breaths.'
@@ -183,7 +185,7 @@ export default function BreathingCard({ onGroundingFeedback }) {
               </div>
               <button
                 onClick={handleReset}
-                className="text-[10px] font-bold text-slate-500 hover:text-slate-800 underline cursor-pointer mt-1"
+                className="text-[10px] font-bold text-slate-400 hover:text-white underline cursor-pointer mt-1"
               >
                 Start Another Session
               </button>

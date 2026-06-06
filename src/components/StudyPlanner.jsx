@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   Sparkles, 
@@ -6,11 +6,8 @@ import {
   Plus, 
   Loader2, 
   Trash2, 
-  AlertCircle, 
   Check, 
-  ChevronRight,
-  TrendingUp,
-  Clock
+  ChevronRight
 } from 'lucide-react';
 import { db } from '../firebase';
 
@@ -25,7 +22,7 @@ export default function StudyPlanner({ user, profile }) {
   const [pendingTaskTitle, setPendingTaskTitle] = useState('');
 
   // Load tasks from mock database
-  const loadTasks = async () => {
+  const loadTasks = useCallback(async () => {
     try {
       const snap = await db.getDocs(`users/${user.uid}/tasks`);
       const list = [];
@@ -33,16 +30,16 @@ export default function StudyPlanner({ user, profile }) {
         list.push({ id: doc.id, ...doc.data() });
       });
       // Sort tasks: Active first, then by date
-      list.sort((a, b) => (a.status === 'Done' ? 1 : -1));
+      list.sort((a, _b) => (a.status === 'Done' ? 1 : -1));
       setTasks(list);
     } catch (err) {
       console.error("Failed to load tasks:", err);
     }
-  };
+  }, [user.uid]);
 
   useEffect(() => {
     loadTasks();
-  }, [user]);
+  }, [loadTasks]);
 
   const handleAddTaskSubmit = async (e) => {
     e.preventDefault();

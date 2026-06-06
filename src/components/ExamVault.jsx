@@ -1,16 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   FileText, 
   Plus, 
   Calendar, 
-  Award, 
   Clock, 
   Play, 
   CheckCircle, 
   AlertCircle,
   Wind,
-  PlusCircle,
   Trophy,
   X
 } from 'lucide-react';
@@ -41,8 +39,7 @@ export default function ExamVault({ user, currentCheckin, onTestAdded }) {
   const [rank, setRank] = useState('');
   const [percentile, setPercentile] = useState('');
 
-  // Load tests from mock database
-  const loadTests = async () => {
+  const loadTests = useCallback(async () => {
     try {
       const snap = await db.getDocs(`users/${user.uid}/tests`);
       const list = [];
@@ -55,11 +52,11 @@ export default function ExamVault({ user, currentCheckin, onTestAdded }) {
     } catch (err) {
       console.error("Failed to load tests:", err);
     }
-  };
+  }, [user.uid]);
 
   useEffect(() => {
     loadTests();
-  }, [user]);
+  }, [loadTests]);
 
   // Focus Mode Timer
   useEffect(() => {
@@ -98,7 +95,7 @@ export default function ExamVault({ user, currentCheckin, onTestAdded }) {
     checkOngoingTests();
     const timer = setInterval(checkOngoingTests, 15000);
     return () => clearInterval(timer);
-  }, [tests]);
+  }, [tests, user.uid]);
 
   const handleAddTest = async (e) => {
     e.preventDefault();
@@ -117,7 +114,7 @@ export default function ExamVault({ user, currentCheckin, onTestAdded }) {
       emotionalTag: null
     };
 
-    const docRef = await db.addDoc(`users/${user.uid}/tests`, newTest);
+    await db.addDoc(`users/${user.uid}/tests`, newTest);
     setShowAddForm(false);
     
     // Clear inputs

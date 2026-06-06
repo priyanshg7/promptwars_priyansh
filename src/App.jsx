@@ -1,13 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   Flame, 
   Loader2, 
-  Sparkles, 
   LogIn, 
   UserPlus,
-  ShieldCheck, 
-  ArrowRight,
   Globe
 } from 'lucide-react';
 import { auth, db } from './firebase';
@@ -17,7 +14,7 @@ import UserProfile from './components/UserProfile';
 import './i18n'; // Bootstrap translations
 
 export default function App() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   
   // Auth state
   const [currentUser, setCurrentUser] = useState(null);
@@ -69,7 +66,7 @@ export default function App() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [i18n]);
 
   const handleSignInGoogle = async () => {
     setLoginError('');
