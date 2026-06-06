@@ -103,19 +103,19 @@ export default function Onboarding({ user, onComplete }) {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto glass-card border border-slate-800/80 bg-slate-900/40 rounded-md p-6 md:p-8 flex flex-col gap-6 md:gap-8 shadow-xl relative overflow-hidden animate-scale-up">
+    <div className="w-full max-w-2xl mx-auto glass-card rounded-lg p-6 md:p-8 flex flex-col gap-6 md:gap-8 shadow-2xl relative overflow-hidden bg-slate-900/40 border border-slate-800 animate-scale-up text-slate-300">
       
       {/* Dynamic background element for premium aesthetic */}
-      <div className="absolute -right-16 -top-16 w-36 h-36 bg-[#00C9B0] rounded-full blur-3xl opacity-10 pointer-events-none" />
-      <div className="absolute -left-16 -bottom-16 w-36 h-36 bg-indigo-500 rounded-full blur-3xl opacity-10 pointer-events-none" />
+      <div className="absolute -right-16 -top-16 w-36 h-36 bg-[#00A389]/5 rounded-full blur-3xl opacity-10 pointer-events-none" />
+      <div className="absolute -left-16 -bottom-16 w-36 h-36 bg-indigo-500/5 rounded-full blur-3xl opacity-10 pointer-events-none" />
 
       {/* Progress indicators */}
-      <div className="flex items-center gap-1.5 z-10">
+      <div className="flex items-center gap-1.5 z-10 select-none">
         {[1, 2, 3, 4].map(num => (
           <div 
             key={num} 
             className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-              step >= num ? 'bg-[#00C9B0]' : 'bg-slate-800'
+              step >= num ? 'bg-[#00A389]' : 'bg-slate-800'
             }`} 
           />
         ))}
@@ -125,19 +125,19 @@ export default function Onboarding({ user, onComplete }) {
       {step === 1 && (
         <div className="flex flex-col gap-6 animate-fade-in z-10">
           <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-bold text-[#00C9B0] uppercase tracking-widest flex items-center gap-1.5">
+            <span className="text-[10px] font-bold text-[#00A389] uppercase tracking-widest flex items-center gap-1.5 font-space">
               <User className="w-3.5 h-3.5" />
               Step 1 of 4
             </span>
             <h2 className="text-2xl font-extrabold text-white tracking-tight">Tell us about yourself</h2>
-            <p className="text-xs text-gray-400 leading-relaxed">
+            <p className="text-xs text-slate-400 leading-relaxed">
               We personalize our AI tone based on your age and target goals.
             </p>
           </div>
 
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="name-input" className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+              <label htmlFor="name-input" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                 Full Name
               </label>
               <input
@@ -147,13 +147,13 @@ export default function Onboarding({ user, onComplete }) {
                 placeholder="Enter your name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-950/40 border border-slate-800 rounded-md focus:ring-2 focus:ring-[#00C9B0] focus:outline-none placeholder-gray-500 font-semibold text-white text-sm"
+                className="premium-input w-full"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="age-input" className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                <label htmlFor="age-input" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   Age (for AI Tone Calibration)
                 </label>
                 <input
@@ -164,26 +164,26 @@ export default function Onboarding({ user, onComplete }) {
                   required
                   value={age}
                   onChange={(e) => setAge(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-950/40 border border-slate-800 rounded-md focus:ring-2 focus:ring-[#00C9B0] focus:outline-none placeholder-gray-500 font-semibold text-white text-sm font-space"
+                  className="premium-input w-full font-space"
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="grade-select" className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                <label htmlFor="grade-select" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   Current Academic Grade
                 </label>
                 <select
                   id="grade-select"
                   value={grade}
                   onChange={(e) => setGrade(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-950/40 border border-slate-800 rounded-md focus:ring-2 focus:ring-[#00C9B0] focus:outline-none text-white text-sm font-semibold cursor-pointer"
+                  className="premium-input w-full cursor-pointer bg-slate-950"
                 >
-                  <option className="bg-slate-900" value="Class 10 Student">Class 10</option>
-                  <option className="bg-slate-900" value="Class 11 Student">Class 11</option>
-                  <option className="bg-slate-900" value="Class 12 / JEE Aspirant">Class 12 / JEE Aspirant</option>
-                  <option className="bg-slate-900" value="Class 12 / NEET Aspirant">Class 12 / NEET Aspirant</option>
-                  <option className="bg-slate-900" value="College Student / Graduate">College Graduate</option>
-                  <option className="bg-slate-900" value="UPSC CSE Repeater / Dedicated Aspirant">UPSC Dedicated Aspirant</option>
+                  <option value="Class 10 Student">Class 10</option>
+                  <option value="Class 11 Student">Class 11</option>
+                  <option value="Class 12 / JEE Aspirant">Class 12 / JEE Aspirant</option>
+                  <option value="Class 12 / NEET Aspirant">Class 12 / NEET Aspirant</option>
+                  <option value="College Student / Graduate">College Graduate</option>
+                  <option value="UPSC CSE Repeater / Dedicated Aspirant">UPSC Dedicated Aspirant</option>
                 </select>
               </div>
             </div>
@@ -192,7 +192,7 @@ export default function Onboarding({ user, onComplete }) {
           <button
             onClick={handleNext}
             disabled={!name.trim()}
-            className="mt-4 w-full bg-[#00C9B0] hover:bg-[#00b29c] text-[#060B18] py-2.5 text-sm font-bold rounded-md transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="mt-4 w-full bg-[#00A389] hover:bg-[#008e77] text-white py-2.5 text-sm font-bold rounded-md transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t('next')}
             <ArrowRight className="w-4 h-4" />
@@ -204,12 +204,12 @@ export default function Onboarding({ user, onComplete }) {
       {step === 2 && (
         <div className="flex flex-col gap-6 animate-fade-in z-10">
           <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-bold text-[#00C9B0] uppercase tracking-widest flex items-center gap-1.5">
+            <span className="text-[10px] font-bold text-[#00A389] uppercase tracking-widest flex items-center gap-1.5 font-space">
               <BookOpen className="w-3.5 h-3.5" />
               Step 2 of 4
             </span>
             <h2 className="text-2xl font-extrabold text-white tracking-tight">{t('select_exams')}</h2>
-            <p className="text-xs text-gray-400 leading-relaxed">
+            <p className="text-xs text-slate-400 leading-relaxed">
               StressRadar calibrates its warnings and count downs for specific exam syllabus patterns.
             </p>
           </div>
@@ -221,16 +221,16 @@ export default function Onboarding({ user, onComplete }) {
                 <button
                   key={exam.id}
                   onClick={() => handleToggleExam(exam)}
-                  className={`p-3.5 rounded-md border text-left flex flex-col gap-1 transition-all cursor-pointer ${
+                  className={`p-3.5 rounded border text-left flex flex-col gap-1 transition-all cursor-pointer ${
                     selected 
-                      ? 'border-[#00C9B0] bg-[#00C9B0]/10 text-white shadow-sm' 
-                      : 'border-slate-800 bg-slate-950/20 text-gray-400 hover:border-slate-700 hover:text-white'
+                      ? 'border-[#00A389] bg-[#00A389]/10 text-white font-bold' 
+                      : 'border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-700 hover:text-white'
                   }`}
                 >
-                  <span className="text-xs font-bold font-space text-[#00C9B0] uppercase tracking-wider">
+                  <span className="text-[9px] font-bold font-space text-[#00A389] uppercase tracking-wider">
                     {exam.category}
                   </span>
-                  <span className="text-sm font-extrabold leading-snug">
+                  <span className="text-xs font-extrabold leading-snug">
                     {exam.name}
                   </span>
                 </button>
@@ -241,14 +241,14 @@ export default function Onboarding({ user, onComplete }) {
           <div className="flex gap-4 mt-2">
             <button
               onClick={handlePrev}
-              className="flex-1 bg-transparent hover:bg-slate-800 border border-slate-800 hover:border-slate-750 text-white py-2.5 text-sm font-bold rounded-md transition-all cursor-pointer"
+              className="flex-1 bg-transparent hover:bg-slate-850 border border-slate-800 text-slate-300 py-2.5 text-sm font-bold rounded-md transition-all cursor-pointer"
             >
               Back
             </button>
             <button
               onClick={handleNext}
               disabled={selectedExams.length === 0}
-              className="flex-1 bg-[#00C9B0] hover:bg-[#00b29c] text-[#060B18] py-2.5 text-sm font-bold rounded-md transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-[#00A389] hover:bg-[#008e77] text-white py-2.5 text-sm font-bold rounded-md transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {t('next')}
               <ArrowRight className="w-4 h-4" />
@@ -261,12 +261,12 @@ export default function Onboarding({ user, onComplete }) {
       {step === 3 && (
         <div className="flex flex-col gap-6 animate-fade-in z-10">
           <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-bold text-[#00C9B0] uppercase tracking-widest flex items-center gap-1.5">
+            <span className="text-[10px] font-bold text-[#00A389] uppercase tracking-widest flex items-center gap-1.5 font-space">
               <Languages className="w-3.5 h-3.5" />
               Step 3 of 4
             </span>
             <h2 className="text-2xl font-extrabold text-white tracking-tight">{t('language_preference')}</h2>
-            <p className="text-xs text-gray-400 leading-relaxed">
+            <p className="text-xs text-slate-400 leading-relaxed">
               Choose your language. Gemini generates advice in your native tongue.
             </p>
           </div>
@@ -276,8 +276,8 @@ export default function Onboarding({ user, onComplete }) {
               onClick={() => handleLanguageChange('en')}
               className={`p-6 rounded-md border flex flex-col items-center justify-center gap-2 transition-all cursor-pointer ${
                 lang === 'en' 
-                  ? 'border-[#00C9B0] bg-[#00C9B0]/10 text-white' 
-                  : 'border-slate-800 bg-slate-950/20 text-gray-400 hover:border-slate-700 hover:text-white'
+                  ? 'border-[#00A389] bg-[#00A389]/10 text-white font-bold' 
+                  : 'border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-700 hover:text-white'
               }`}
             >
               <span className="text-2xl font-bold font-space">A</span>
@@ -288,8 +288,8 @@ export default function Onboarding({ user, onComplete }) {
               onClick={() => handleLanguageChange('hi')}
               className={`p-6 rounded-md border flex flex-col items-center justify-center gap-2 transition-all cursor-pointer ${
                 lang === 'hi' 
-                  ? 'border-[#00C9B0] bg-[#00C9B0]/10 text-white' 
-                  : 'border-slate-800 bg-slate-950/20 text-gray-400 hover:border-slate-700 hover:text-white'
+                  ? 'border-[#00A389] bg-[#00A389]/10 text-white font-bold' 
+                  : 'border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-700 hover:text-white'
               }`}
             >
               <span className="text-2xl font-bold font-space">अ</span>
@@ -300,13 +300,13 @@ export default function Onboarding({ user, onComplete }) {
           <div className="flex gap-4 mt-2">
             <button
               onClick={handlePrev}
-              className="flex-1 bg-transparent hover:bg-slate-800 border border-slate-800 hover:border-slate-750 text-white py-2.5 text-sm font-bold rounded-md transition-all cursor-pointer"
+              className="flex-1 bg-transparent hover:bg-slate-850 border border-slate-800 text-slate-300 py-2.5 text-sm font-bold rounded-md transition-all cursor-pointer"
             >
               Back
             </button>
             <button
               onClick={handleNext}
-              className="flex-1 bg-[#00C9B0] hover:bg-[#00b29c] text-[#060B18] py-2.5 text-sm font-bold rounded-md transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+              className="flex-1 bg-[#00A389] hover:bg-[#008e77] text-white py-2.5 text-sm font-bold rounded-md transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
             >
               {t('next')}
               <ArrowRight className="w-4 h-4" />
@@ -319,22 +319,22 @@ export default function Onboarding({ user, onComplete }) {
       {step === 4 && (
         <div className="flex flex-col gap-6 animate-fade-in z-10">
           <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-bold text-[#00C9B0] uppercase tracking-widest flex items-center gap-1.5">
+            <span className="text-[10px] font-bold text-[#00A389] uppercase tracking-widest flex items-center gap-1.5 font-space">
               <Activity className="w-3.5 h-3.5" />
               Step 4 of 4
             </span>
             <h2 className="text-2xl font-extrabold text-white tracking-tight">{t('day0_baseline')}</h2>
-            <p className="text-xs text-gray-400 leading-relaxed">
+            <p className="text-xs text-slate-400 leading-relaxed">
               These initial sliders establish your baseline. All future wellness scores compare relative to today.
             </p>
           </div>
 
-          <div className="flex flex-col gap-5 bg-slate-950/20 p-4 border border-slate-800 rounded-md">
+          <div className="flex flex-col gap-5 bg-slate-950/40 border border-slate-800 p-4 rounded-md">
             {/* Sleep slider */}
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-semibold text-gray-300">{t('sleep_quality')}</span>
-                <span className="font-space font-bold text-[#00C9B0] bg-[#00C9B0]/10 px-2 py-0.5 rounded border border-[#00C9B0]/20">
+                <span className="font-semibold text-slate-350">{t('sleep_quality')}</span>
+                <span className="font-space font-bold text-[#00A389] bg-[#00A389]/10 px-2 py-0.5 rounded border border-[#00A389]/20">
                   {sleep} / 10
                 </span>
               </div>
@@ -345,15 +345,15 @@ export default function Onboarding({ user, onComplete }) {
                 step="1"
                 value={sleep}
                 onChange={(e) => setSleep(e.target.value)}
-                className="w-full h-1.5 bg-slate-950 rounded-lg appearance-none cursor-pointer focus:outline-none accent-[#00C9B0]"
+                className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer focus:outline-none accent-[#00A389]"
               />
             </div>
 
             {/* Confidence slider */}
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-semibold text-gray-300">{t('confidence')}</span>
-                <span className="font-space font-bold text-[#00C9B0] bg-[#00C9B0]/10 px-2 py-0.5 rounded border border-[#00C9B0]/20">
+                <span className="font-semibold text-slate-350">{t('confidence')}</span>
+                <span className="font-space font-bold text-[#00A389] bg-[#00A389]/10 px-2 py-0.5 rounded border border-[#00A389]/20">
                   {confidence} / 10
                 </span>
               </div>
@@ -364,15 +364,15 @@ export default function Onboarding({ user, onComplete }) {
                 step="1"
                 value={confidence}
                 onChange={(e) => setConfidence(e.target.value)}
-                className="w-full h-1.5 bg-slate-950 rounded-lg appearance-none cursor-pointer focus:outline-none accent-[#00C9B0]"
+                className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer focus:outline-none accent-[#00A389]"
               />
             </div>
 
             {/* Study Hours slider */}
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-semibold text-gray-300">{t('study_hours')}</span>
-                <span className="font-space font-bold text-[#00C9B0] bg-[#00C9B0]/10 px-2 py-0.5 rounded border border-[#00C9B0]/20">
+                <span className="font-semibold text-slate-350">{t('study_hours')}</span>
+                <span className="font-space font-bold text-[#00A389] bg-[#00A389]/10 px-2 py-0.5 rounded border border-[#00A389]/20">
                   {studyHours} hrs / day
                 </span>
               </div>
@@ -383,7 +383,7 @@ export default function Onboarding({ user, onComplete }) {
                 step="1"
                 value={studyHours}
                 onChange={(e) => setStudyHours(e.target.value)}
-                className="w-full h-1.5 bg-slate-950 rounded-lg appearance-none cursor-pointer focus:outline-none accent-[#00C9B0]"
+                className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer focus:outline-none accent-[#00A389]"
               />
             </div>
           </div>
@@ -391,13 +391,13 @@ export default function Onboarding({ user, onComplete }) {
           <div className="flex gap-4 mt-2">
             <button
               onClick={handlePrev}
-              className="flex-1 bg-transparent hover:bg-slate-800 border border-slate-800 hover:border-slate-750 text-white py-2.5 text-sm font-bold rounded-md transition-all cursor-pointer"
+              className="flex-1 bg-transparent hover:bg-slate-850 border border-slate-800 text-slate-300 py-2.5 text-sm font-bold rounded-md transition-all cursor-pointer"
             >
               Back
             </button>
             <button
               onClick={handleFinish}
-              className="flex-1 bg-[#00C9B0] hover:bg-[#00b29c] text-[#060B18] py-2.5 text-sm font-bold rounded-md transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+              className="flex-1 bg-[#00A389] hover:bg-[#008e77] text-white py-2.5 text-sm font-bold rounded-md transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
             >
               {t('finish_setup')}
               <CheckCircle2 className="w-4 h-4" />

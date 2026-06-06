@@ -17,6 +17,40 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  grade: {
+    type: String,
+    default: ""
+  },
+  targetExams: [{
+    type: String
+  }],
+  examDates: {
+    type: Map,
+    of: String,
+    default: {}
+  },
+  language: {
+    type: String,
+    default: "en"
+  },
+  onboarded: {
+    type: Boolean,
+    default: false
+  },
+  burnoutScore: {
+    type: Number,
+    default: 40
+  },
+  day0Baseline: {
+    sleep: Number,
+    confidence: Number,
+    studyHours: Number,
+    createdAt: Date
+  },
+  lastCheckinDate: {
+    type: String,
+    default: ""
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -24,3 +58,4 @@ const UserSchema = new mongoose.Schema({
 });
 
 export default mongoose.model('User', UserSchema);
+

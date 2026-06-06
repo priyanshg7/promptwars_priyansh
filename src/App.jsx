@@ -5,6 +5,7 @@ import {
   Loader2, 
   Sparkles, 
   LogIn, 
+  UserPlus,
   ShieldCheck, 
   ArrowRight,
   Globe
@@ -12,6 +13,7 @@ import {
 import { auth, db } from './firebase';
 import Onboarding from './components/Onboarding';
 import Dashboard from './components/Dashboard';
+import UserProfile from './components/UserProfile';
 import './i18n'; // Bootstrap translations
 
 export default function App() {
@@ -28,8 +30,13 @@ export default function App() {
   // Email form state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [registerName, setRegisterName] = useState('');
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [signingIn, setSigningIn] = useState(false);
+
+  // Navigation View: 'dashboard' | 'profile'
+  const [activeView, setActiveView] = useState('dashboard');
 
   // Auth State Listener
   useEffect(() => {
@@ -57,6 +64,7 @@ export default function App() {
         }
       } else {
         setProfile(null);
+        setActiveView('dashboard');
       }
     });
 
@@ -82,7 +90,24 @@ export default function App() {
     try {
       await auth.signInWithEmailAndPassword(email, password);
     } catch (err) {
-      setLoginError(err.message || 'Invalid credentials.');
+      setLoginError(err.message || 'Invalid email or password.');
+    } finally {
+      setSigningIn(false);
+    }
+  };
+
+  const handleRegisterEmail = async (e) => {
+    e.preventDefault();
+    setLoginError('');
+    if (!registerName.trim()) {
+      setLoginError('Please provide your full name.');
+      return;
+    }
+    setSigningIn(true);
+    try {
+      await auth.registerWithEmailAndPassword(registerName.trim(), email, password);
+    } catch (err) {
+      setLoginError(err.message || 'Registration failed.');
     } finally {
       setSigningIn(false);
     }
@@ -97,7 +122,7 @@ export default function App() {
   };
 
   const handleLogout = async () => {
-    if (window.confirm("Are you sure you want to log out of StressRadar?")) {
+    if (window.confirm("Are you sure you want to reset all data and restart the setup onboarding?")) {
       await auth.signOut();
     }
   };
@@ -114,9 +139,9 @@ export default function App() {
 
   if (authLoading || profileLoading) {
     return (
-      <div className="min-h-screen bg-[#060B18] flex flex-col justify-center items-center gap-3">
-        <Loader2 className="w-10 h-10 animate-spin text-[#00C9B0]" />
-        <span className="text-xs font-semibold text-gray-500 font-space uppercase tracking-widest">
+      <div className="min-h-screen bg-[#0b0f19] flex flex-col justify-center items-center gap-3">
+        <Loader2 className="w-10 h-10 animate-spin text-[#00A389]" />
+        <span className="text-xs font-semibold text-slate-400 font-space uppercase tracking-widest">
           Calibrating StressRadar...
         </span>
       </div>
@@ -124,19 +149,19 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#060B18] flex flex-col selection:bg-[#00C9B0]/20 selection:text-white font-sans text-gray-200">
+    <div className="min-h-screen bg-[#0b0f19] flex flex-col selection:bg-[#00A389]/20 selection:text-white font-sans text-slate-300">
       
-      {/* Dynamic Top Navigation Bar */}
-      <header className="w-full bg-slate-950/20 border-b border-slate-900 py-4 px-4 md:px-8 z-30 shadow-sm sticky top-0 backdrop-blur-md">
+      {/* Top Navigation Bar */}
+      <header className="w-full bg-[#0d1321]/80 border-b border-slate-800/80 py-4 px-4 md:px-8 z-30 shadow-md sticky top-0 backdrop-blur-md">
         <div className="max-w-6xl mx-auto flex justify-between items-center gap-4">
           
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md bg-[#00C9B0] flex items-center justify-center text-slate-950 shadow-sm">
-              <Flame className="w-5 h-5 fill-slate-950" />
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveView('dashboard')}>
+            <div className="w-8 h-8 rounded-md bg-[#00A389] flex items-center justify-center text-white shadow-sm">
+              <Flame className="w-5 h-5 fill-white" />
             </div>
             <div className="flex flex-col">
               <span className="font-space font-bold text-white text-sm tracking-tight leading-none">StressRadar</span>
-              <span className="text-[8px] uppercase tracking-wider font-bold text-[#00C9B0]">PromptWars Demo</span>
+              <span className="text-[8px] uppercase tracking-wider font-bold text-[#00A389]">Student Wellness Tracker</span>
             </div>
           </div>
 
@@ -144,18 +169,18 @@ export default function App() {
             {/* Global Language Toggle */}
             <button
               onClick={toggleLanguage}
-              className="text-[10px] font-bold text-gray-400 hover:text-white flex items-center gap-1 bg-slate-900/60 border border-slate-800 hover:border-slate-750 px-2.5 py-1.5 rounded-md transition-all cursor-pointer focus:outline-none"
+              className="text-[10px] font-bold text-slate-300 hover:text-white flex items-center gap-1 bg-slate-900 border border-slate-800 hover:border-slate-700 px-2.5 py-1.5 rounded-md transition-all cursor-pointer focus:outline-none"
             >
-              <Globe className="w-3.5 h-3.5 text-[#00C9B0]" />
+              <Globe className="w-3.5 h-3.5 text-[#00A389]" />
               {i18n.language === 'hi' ? 'English' : 'हिन्दी'}
             </button>
 
-            {currentUser && (
+            {profile && (
               <button
                 onClick={handleLogout}
-                className="text-[10px] font-bold text-rose-500 hover:text-rose-600 bg-slate-900/60 border border-slate-800 hover:border-slate-750 px-2.5 py-1.5 rounded-md transition-all cursor-pointer focus:outline-none"
+                className="text-[10px] font-bold text-rose-400 hover:text-rose-500 bg-slate-900 border border-slate-800 hover:border-slate-700 px-2.5 py-1.5 rounded-md transition-all cursor-pointer focus:outline-none"
               >
-                Logout
+                Reset App / Clear Data
               </button>
             )}
           </div>
@@ -166,29 +191,49 @@ export default function App() {
       <main className="flex-1 flex flex-col justify-center py-8 px-4 md:px-8 max-w-6xl w-full mx-auto">
         {!currentUser ? (
           
-          /* LOGIN SCREEN */
-          <div className="w-full max-w-md mx-auto glass-card border border-slate-800/80 rounded-md p-6 md:p-8 shadow-xl flex flex-col gap-6 animate-scale-up relative overflow-hidden">
-            <div className="absolute -right-12 -top-12 w-28 h-28 bg-[#00C9B0]/5 rounded-full blur-2xl pointer-events-none" />
+          /* LOGIN / REGISTER PORTAL */
+          <div className="w-full max-w-md mx-auto glass-card rounded-lg p-6 md:p-8 shadow-2xl flex flex-col gap-6 animate-scale-up relative overflow-hidden bg-slate-900/40 border border-slate-800">
+            <div className="absolute -right-12 -top-12 w-28 h-28 bg-[#00A389]/5 rounded-full blur-2xl pointer-events-none" />
             
             <div className="flex flex-col gap-1 text-center">
-              <div className="mx-auto w-12 h-12 rounded-md bg-[#00C9B0]/10 border border-[#00C9B0]/20 flex items-center justify-center text-[#00C9B0] shadow-sm mb-2">
-                <Flame className="w-7 h-7 fill-[#00C9B0]/20" />
+              <div className="mx-auto w-12 h-12 rounded-md bg-[#00A389]/10 border border-[#00A389]/20 flex items-center justify-center text-[#00A389] shadow-sm mb-2">
+                <Flame className="w-7 h-7 fill-[#00A389]/10" />
               </div>
-              <h1 className="text-2xl font-extrabold tracking-tight text-white">StressRadar Portal</h1>
-              <p className="text-xs text-gray-500 max-w-[280px] mx-auto leading-relaxed">
+              <h1 className="text-2xl font-extrabold tracking-tight text-white">
+                {isRegisterMode ? 'Create Student Profile' : 'StressRadar Portal'}
+              </h1>
+              <p className="text-xs text-slate-400 max-w-[280px] mx-auto leading-relaxed">
                 Empowering Indian competitive students with real-time mental health & performance insights.
               </p>
             </div>
 
             {loginError && (
-              <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-md text-xs font-semibold leading-relaxed">
+              <div className="p-3 bg-rose-950/40 border border-rose-500/30 text-rose-400 rounded-md text-xs font-semibold leading-relaxed">
                 {loginError}
               </div>
             )}
 
-            <form onSubmit={handleSignInEmail} className="flex flex-col gap-4">
+            <form onSubmit={isRegisterMode ? handleRegisterEmail : handleSignInEmail} className="flex flex-col gap-4">
+              
+              {isRegisterMode && (
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="register-name" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Full Name
+                  </label>
+                  <input
+                    id="register-name"
+                    type="text"
+                    required
+                    placeholder="Priyansh Gupta"
+                    value={registerName}
+                    onChange={(e) => setRegisterName(e.target.value)}
+                    className="premium-input w-full"
+                  />
+                </div>
+              )}
+
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="login-email" className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                <label htmlFor="login-email" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   Student Email
                 </label>
                 <input
@@ -198,12 +243,12 @@ export default function App() {
                   placeholder="student@exam.res"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 text-xs border border-slate-800 bg-slate-950/40 rounded-md text-white focus:ring-2 focus:ring-[#00C9B0] focus:outline-none placeholder-gray-600 font-semibold"
+                  className="premium-input w-full"
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="login-password" className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                <label htmlFor="login-password" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   Password
                 </label>
                 <input
@@ -213,39 +258,85 @@ export default function App() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 text-xs border border-slate-800 bg-slate-950/40 rounded-md text-white focus:ring-2 focus:ring-[#00C9B0] focus:outline-none placeholder-gray-600 font-semibold font-space"
+                  className="premium-input w-full font-space"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={signingIn}
-                className="mt-2 w-full bg-[#00C9B0] hover:bg-[#00b29c] text-[#060B18] py-2 text-xs font-bold rounded-md transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="mt-2 w-full bg-[#00A389] hover:bg-[#008e77] text-white py-2.5 text-xs font-bold rounded-md transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
-                {signingIn ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LogIn className="w-4 h-4" />}
-                Sign In to Tracker
+                {signingIn ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : isRegisterMode ? (
+                  <UserPlus className="w-4 h-4" />
+                ) : (
+                  <LogIn className="w-4 h-4" />
+                )}
+                {isRegisterMode ? 'Register Account' : 'Sign In to Tracker'}
               </button>
             </form>
 
-            <div className="flex items-center gap-2 text-gray-600 my-1">
-              <div className="h-px flex-1 bg-slate-850" />
-              <span className="text-[10px] uppercase font-bold tracking-wider">Or Quick Demo Entry</span>
-              <div className="h-px flex-1 bg-slate-850" />
+            <div className="text-center text-xs">
+              {isRegisterMode ? (
+                <p className="text-slate-400">
+                  Already have an account?{' '}
+                  <button 
+                    onClick={() => {
+                      setIsRegisterMode(false);
+                      setLoginError('');
+                    }}
+                    className="text-[#00A389] hover:underline font-bold bg-transparent border-none cursor-pointer"
+                  >
+                    Sign In
+                  </button>
+                </p>
+              ) : (
+                <p className="text-slate-400">
+                  Don't have an account?{' '}
+                  <button 
+                    onClick={() => {
+                      setIsRegisterMode(true);
+                      setLoginError('');
+                    }}
+                    className="text-[#00A389] hover:underline font-bold bg-transparent border-none cursor-pointer"
+                  >
+                    Register
+                  </button>
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 text-slate-650 my-1">
+              <div className="h-px flex-1 bg-slate-800" />
+              <span className="text-[9px] uppercase font-bold tracking-wider text-slate-500">Or Quick Demo Entry</span>
+              <div className="h-px flex-1 bg-slate-800" />
             </div>
 
             <button
               onClick={handleSignInGoogle}
               disabled={signingIn}
-              className="w-full py-2 bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:text-white rounded-md text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 focus:ring-2 focus:ring-[#00C9B0] focus:outline-none"
+              className="w-full py-2.5 bg-slate-950 border border-slate-800 hover:bg-slate-900 hover:text-white rounded-md text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 text-slate-300"
             >
-              <LogIn className="w-4 h-4 text-[#00C9B0]" />
+              <LogIn className="w-4 h-4 text-[#00A389]" />
               Enter with Mock Google Credentials
             </button>
           </div>
         ) : !profile ? (
           
           /* ONBOARDING FLOW */
-          <Onboarding user={currentUser} onComplete={handleOnboardingComplete} />
+          <div className="bg-[#0b0f19] p-4 rounded-lg">
+            <Onboarding user={currentUser} onComplete={handleOnboardingComplete} />
+          </div>
+        ) : activeView === 'profile' ? (
+          
+          /* USER PROFILE SETTINGS VIEW */
+          <UserProfile 
+            profile={profile}
+            onUpdateProfile={handleUpdateProfile}
+            onBack={() => setActiveView('dashboard')}
+          />
         ) : (
           
           /* DASHBOARD VIEW */
@@ -253,13 +344,14 @@ export default function App() {
             profile={profile} 
             onUpdateProfile={handleUpdateProfile} 
             onLogout={handleLogout} 
+            onProfileToggle={() => setActiveView('profile')}
           />
         )}
       </main>
 
-      {/* simple accessible footer */}
-      <footer className="border-t border-slate-900/60 bg-slate-950/10 py-6 text-center text-xs text-gray-500 font-space z-10">
-        <p>© 2026 StressRadar Inc. Powered by Google Gemini AI & Firebase Firestore.</p>
+      {/* Footer */}
+      <footer className="border-t border-slate-800/80 bg-[#0d1321]/60 py-6 text-center text-xs text-slate-500 font-space z-10">
+        <p>© 2026 StressRadar Inc. Powered by Google Gemini AI & Express + MongoDB.</p>
       </footer>
 
     </div>

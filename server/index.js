@@ -4,6 +4,10 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
 import geminiRoutes from './routes/gemini.js';
+import tasksRoutes from './routes/tasks.js';
+import testsRoutes from './routes/tests.js';
+import checkinsRoutes from './routes/checkins.js';
+import auth from './middleware/auth.js';
 
 // Load environment variables
 dotenv.config();
@@ -32,7 +36,11 @@ mongoose
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/tasks', auth, tasksRoutes);
+app.use('/api/tests', auth, testsRoutes);
+app.use('/api/checkins', auth, checkinsRoutes);
 app.use('/api/gemini', geminiRoutes);
+
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

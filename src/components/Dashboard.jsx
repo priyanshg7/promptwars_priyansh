@@ -18,7 +18,10 @@ import {
   Wind,
   ShieldCheck,
   TrendingUp,
-  Volume2
+  Volume2,
+  User,
+  Settings,
+  X
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -50,11 +53,11 @@ const DEFAULT_CHART_DATA = [
   { day: 'Sun', score: 75, burnout: 40 }
 ];
 
-export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
+export default function Dashboard({ profile, onUpdateProfile, onLogout, onProfileToggle }) {
   const { t, i18n } = useTranslation();
   
-  // Sub-modules navigation tabs
-  const [activeSubTab, setActiveSubTab] = useState('planner'); // 'planner' | 'vault' | 'analytics'
+  // Sub-modules navigation tabs (Planner / Vault)
+  const [activeSubTab, setActiveSubTab] = useState('planner'); 
   
   // Modal states
   const [showCheckin, setShowCheckin] = useState(false);
@@ -86,6 +89,58 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
 
   // Recharts state
   const [chartData, setChartData] = useState(DEFAULT_CHART_DATA);
+  const [subjectData, setSubjectData] = useState([]);
+
+  const getSubjectsForExam = (exams) => {
+    if (!exams || exams.length === 0) return ['Physics', 'Chemistry', 'Mathematics'];
+    const primaryExam = exams[0].toLowerCase();
+    if (primaryExam.includes('jee') || primaryExam.includes('gate') || primaryExam.includes('board exam class 12')) {
+      return ['Physics', 'Chemistry', 'Mathematics'];
+    }
+    if (primaryExam.includes('neet')) {
+      return ['Physics', 'Chemistry', 'Biology'];
+    }
+    if (primaryExam.includes('upsc')) {
+      return ['General Studies', 'CSAT', 'Optional Subject'];
+    }
+    if (primaryExam.includes('cat')) {
+      return ['Quantitative Ability', 'DILR', 'Verbal Ability'];
+    }
+    if (primaryExam.includes('boards_10') || primaryExam.includes('class 10')) {
+      return ['Science', 'Mathematics', 'Social Science'];
+    }
+    if (primaryExam.includes('cuet')) {
+      return ['Language Test', 'Domain Subjects', 'General Test'];
+    }
+    return ['Subject A', 'Subject B', 'Subject C'];
+  };
+
+  const generateSubjectData = (tests, currentBurnout) => {
+    const subjects = getSubjectsForExam(profile.targetExams);
+    const completedTests = tests.filter(t => t.status === 'completed');
+    let avgScorePercent = 65;
+    if (completedTests.length > 0) {
+      const sum = completedTests.reduce((acc, t) => acc + (t.percentage || 50), 0);
+      avgScorePercent = Math.round(sum / completedTests.length);
+    }
+
+    return subjects.map((subject, idx) => {
+      let scoreVar = 0;
+      let stressVar = 0;
+      if (idx === 0) { scoreVar = 5; stressVar = -5; }
+      else if (idx === 1) { scoreVar = -12; stressVar = 15; }
+      else { scoreVar = 8; stressVar = -8; }
+
+      const finalScore = Math.max(30, Math.min(100, avgScorePercent + scoreVar));
+      const finalStress = Math.max(10, Math.min(100, currentBurnout + stressVar));
+
+      return {
+        subject,
+        Score: finalScore,
+        Stress: finalStress
+      };
+    });
+  };
 
   // Check Web Speech API availability
   useEffect(() => {
@@ -118,23 +173,21 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
         checkinList.push(doc.data());
       });
       
+      const testSnap = await db.getDocs(`users/${profile.uid}/tests`);
+      const testList = [];
+      testSnap.docs.forEach(doc => {
+        testList.push({ id: doc.id, ...doc.data() });
+      });
+      testList.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
+
       if (checkinList.length > 0) {
         // Sort chronologically
         checkinList.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
         setLastCheckin(checkinList[checkinList.length - 1]);
         
         // Build dual-axis overlay chart data from mock tests & check-ins
-        const testSnap = await db.getDocs(`users/${profile.uid}/tests`);
-        const testList = [];
-        testSnap.docs.forEach(doc => {
-          testList.push(doc.data());
-        });
-        testList.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
-
-        // Generate combined chart data matching days
         const combined = checkinList.slice(-7).map((c, idx) => {
           const checkinDate = new Date(c.createdAt).toLocaleDateString('en-US', { weekday: 'short' });
-          // Check if there was a test on/around this date
           const matchingTest = testList.find(t => 
             t.status === 'completed' && 
             new Date(t.completedAt).toLocaleDateString() === new Date(c.createdAt).toLocaleDateString()
@@ -143,11 +196,15 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
           return {
             day: checkinDate,
             burnout: c.burnoutScoreCalculated || 40,
-            score: matchingTest ? matchingTest.percentage : (idx * 5 + 60) // mock overlay fallback line
+            score: matchingTest ? matchingTest.percentage : (idx * 5 + 60)
           };
         });
         setChartData(combined.length > 0 ? combined : DEFAULT_CHART_DATA);
       }
+
+      // Generate subject-wise performance data
+      const subData = generateSubjectData(testList, profile.burnoutScore || 40);
+      setSubjectData(subData);
     } catch (err) {
       console.error("Failed to load checkins:", err);
     }
@@ -388,51 +445,60 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
     }
   };
 
-  // Color logic for circular Burnout gauge
+  // Color logic for circular Burnout gauge (calibrated for dark mode)
   const getBurnoutColor = (score) => {
-    if (score <= 40) return { stroke: '#00C9B0', bg: 'rgba(0, 201, 176, 0.1)' }; // Teal (green/healthy)
-    if (score <= 70) return { stroke: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' }; // Amber (warning)
-    return { stroke: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' }; // Red (high risk)
+    if (score <= 40) return { stroke: '#00A389', bg: 'rgba(0, 163, 137, 0.05)' }; // Teal
+    if (score <= 70) return { stroke: '#f59e0b', bg: 'rgba(245, 158, 11, 0.05)' }; // Amber
+    return { stroke: '#ef4444', bg: 'rgba(239, 68, 68, 0.05)' }; // Red
   };
 
   const scoreColor = getBurnoutColor(profile.burnoutScore);
   const checkinDoneToday = lastCheckin && new Date(lastCheckin.createdAt).toDateString() === new Date().toDateString();
 
   return (
-    <div className="flex flex-col gap-6 md:gap-8 pb-12">
+    <div className="flex flex-col gap-6 md:gap-8 pb-12 animate-fade-in text-slate-300">
       
       {/* 1. TOP HEADER & EXAM COUNTDOWNS */}
-      <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-950/20 border border-slate-850 p-5 rounded-md relative overflow-hidden">
-        <div className="absolute -right-10 -bottom-10 w-24 h-24 bg-[#00C9B0]/5 rounded-full blur-2xl pointer-events-none" />
+      <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 glass-card p-6 rounded-lg relative overflow-hidden">
+        <div className="absolute -right-10 -bottom-10 w-24 h-24 bg-[#00A389]/5 rounded-full blur-2xl pointer-events-none" />
         
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-2">
             <span className="text-xl font-extrabold text-white">Welcome, {profile.name}</span>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-650 text-white font-space">
-              {profile.grade}
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-950 border border-indigo-550/30 text-indigo-300 font-space">
+              {profile.grade || 'Aspirant'}
             </span>
           </div>
-          <p className="text-xs text-gray-400">
-            Calibrating stress thresholds for: <span className="font-semibold text-white">{profile.targetExams?.join(', ')}</span>
+          <p className="text-xs text-slate-400">
+            Calibrating stress thresholds for: <span className="font-semibold text-white">{profile.targetExams?.join(', ') || 'No Exam Selected'}</span>
           </p>
         </div>
 
         {/* Countdown Timers */}
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {Object.keys(countdowns).map(exam => (
-            <div key={exam} className="bg-slate-900 border border-slate-800 p-2.5 rounded-md flex flex-col font-space gap-0.5 min-w-[120px]">
-              <span className="text-[9px] uppercase font-bold text-gray-500 tracking-wider">{exam} Countdown</span>
-              <span className="text-xs font-bold text-[#00C9B0]">{countdowns[exam]}</span>
+            <div key={exam} className="bg-slate-900/60 border border-slate-800 p-2.5 rounded flex flex-col font-space gap-0.5 min-w-[120px]">
+              <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">{exam} Countdown</span>
+              <span className="text-xs font-bold text-[#00A389]">{countdowns[exam]}</span>
             </div>
           ))}
           
           {/* Quick Vent Microphone button */}
           <button
             onClick={() => setShowVentModal(true)}
-            className="w-10 h-10 rounded-md bg-[#00C9B0]/10 border border-[#00C9B0]/20 hover:bg-[#00C9B0] hover:text-[#060B18] text-[#00C9B0] flex items-center justify-center transition-all cursor-pointer focus:ring-2 focus:ring-[#00C9B0] active:scale-95 animate-pulse"
+            className="w-10 h-10 rounded-md bg-[#00A389]/10 border border-[#00A389]/20 hover:bg-[#00A389] hover:text-white text-[#00A389] flex items-center justify-center transition-all cursor-pointer focus:ring-2 focus:ring-[#00A389] active:scale-95 shadow-sm"
             title={t('quick_vent')}
           >
             <Mic className="w-5 h-5" />
+          </button>
+
+          {/* User Settings Profile button */}
+          <button
+            onClick={onProfileToggle}
+            className="w-10 h-10 rounded-md bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-600 hover:text-white text-indigo-400 flex items-center justify-center transition-all cursor-pointer focus:ring-2 focus:ring-indigo-500 active:scale-95 shadow-sm"
+            title="Profile Settings"
+          >
+            <User className="w-5 h-5" />
           </button>
         </div>
       </section>
@@ -441,9 +507,9 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* WIDGET A: Circular Burnout risk Gauge */}
-        <div className="glass-card border border-slate-800 rounded-md p-5 flex flex-col items-center justify-between gap-4 text-center min-h-[220px]">
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1">
-            <Flame className="w-4 h-4 text-[#00C9B0]" />
+        <div className="glass-card rounded-lg p-5 flex flex-col items-center justify-between gap-4 text-center min-h-[220px]">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+            <Flame className="w-4 h-4 text-[#00A389]" />
             {t('burnout_risk')}
           </span>
 
@@ -454,7 +520,7 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
                 cx="64"
                 cy="64"
                 r="52"
-                stroke="rgba(255,255,255,0.03)"
+                stroke="rgba(255, 255, 255, 0.04)"
                 strokeWidth="10"
                 fill="transparent"
               />
@@ -475,33 +541,33 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
               <span className="text-3xl font-extrabold font-space text-white">
                 {profile.burnoutScore}%
               </span>
-              <span className="text-[9px] uppercase font-bold text-gray-400">Risk level</span>
+              <span className="text-[9px] uppercase font-bold text-slate-500">Risk level</span>
             </div>
           </div>
 
           <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded border ${
             profile.burnoutScore <= 40 
-              ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' 
+              ? 'text-emerald-400 bg-emerald-950/40 border-emerald-500/30' 
               : profile.burnoutScore <= 70 
-              ? 'text-amber-400 bg-amber-500/10 border-amber-500/20'
-              : 'text-rose-400 bg-rose-500/10 border-rose-500/20 animate-pulse'
+              ? 'text-amber-400 bg-amber-950/40 border-amber-500/30'
+              : 'text-rose-450 bg-rose-950/40 border-rose-500/30 animate-pulse'
           }`}>
             {profile.burnoutScore <= 40 ? 'Healthy Balance' : profile.burnoutScore <= 70 ? 'Moderate Strain' : 'Critical Burnout Risk'}
           </span>
         </div>
 
         {/* WIDGET B: Daily check-in status card */}
-        <div className="glass-card border border-slate-800 rounded-md p-5 flex flex-col justify-between items-center gap-4 text-center min-h-[220px]">
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1">
-            <Activity className="w-4 h-4 text-[#00C9B0]" />
+        <div className="glass-card rounded-lg p-5 flex flex-col justify-between items-center gap-4 text-center min-h-[220px]">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+            <Activity className="w-4 h-4 text-[#00A389]" />
             Check-In Tracker
           </span>
 
           <div className="flex flex-col items-center gap-2">
             <div className={`w-14 h-14 rounded-full flex items-center justify-center border ${
               checkinDoneToday 
-                ? 'bg-emerald-500/10 border-emerald-500/20 text-[#00C9B0]' 
-                : 'bg-slate-950/40 border-slate-850 text-gray-500 animate-pulse'
+                ? 'bg-emerald-950/40 border-emerald-500/30 text-[#00A389]' 
+                : 'bg-slate-900/60 border-slate-800 text-slate-500 animate-pulse'
             }`}>
               <ShieldCheck className="w-8 h-8" />
             </div>
@@ -511,7 +577,7 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
                 {checkinDoneToday ? t('checkin_complete') : t('checkin_pending')}
               </span>
               {checkinDoneToday && lastCheckin && (
-                <span className="text-[10px] text-gray-500">
+                <span className="text-[10px] text-slate-400">
                   Logged: {lastCheckin.primaryEmotion} ({lastCheckin.subEmotion})
                 </span>
               )}
@@ -522,8 +588,8 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
             onClick={() => setShowCheckin(true)}
             className={`w-full py-2 text-xs font-bold rounded-md transition-all cursor-pointer ${
               checkinDoneToday 
-                ? 'bg-slate-800 hover:bg-slate-750 text-gray-300' 
-                : 'bg-[#00C9B0] hover:bg-[#00b29c] text-[#060B18] shadow-md animate-pulse'
+                ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700' 
+                : 'bg-[#00A389] hover:bg-[#00927a] text-white shadow-sm'
             }`}
           >
             {checkinDoneToday ? 'Redo Today\'s Check-in' : 'Start Daily Check-In'}
@@ -531,24 +597,24 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
         </div>
 
         {/* WIDGET C: Proactive AI Insights Panel */}
-        <div className="glass-card border border-slate-800 rounded-md p-5 flex flex-col gap-3.5 min-h-[220px]">
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1">
-            <Sparkles className="w-4 h-4 text-[#00C9B0]" />
+        <div className="glass-card rounded-lg p-5 flex flex-col gap-3.5 min-h-[220px]">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+            <Sparkles className="w-4 h-4 text-[#00A389]" />
             {t('ai_insights')}
           </span>
 
           <div className="flex flex-col gap-2.5 overflow-y-auto max-h-[140px] pr-1">
             {loadingInsights ? (
-              <div className="flex items-center gap-2 justify-center py-8 text-xs text-gray-500">
-                <Loader2 className="w-4 h-4 animate-spin text-[#00C9B0]" />
+              <div className="flex items-center gap-2 justify-center py-8 text-xs text-slate-400">
+                <Loader2 className="w-4 h-4 animate-spin text-[#00A389]" />
                 Gemini analyzing patterns...
               </div>
             ) : insights.length > 0 ? (
               insights.map((ins, idx) => (
                 <div key={idx} className={`p-2.5 border rounded-md text-[11px] leading-relaxed flex gap-2 ${
                   ins.type === 'warning'
-                    ? 'bg-amber-500/5 border-amber-500/15 text-amber-400'
-                    : 'bg-emerald-500/5 border-emerald-500/15 text-emerald-400'
+                    ? 'bg-amber-950/40 border-amber-500/30 text-amber-300'
+                    : 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300'
                 }`}>
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                   <div className="flex flex-col gap-0.5">
@@ -558,24 +624,123 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
                 </div>
               ))
             ) : (
-              <span className="text-[11px] text-gray-500 text-center py-6">No insights yet. Log daily check-ins and mock tests.</span>
+              <span className="text-[11px] text-slate-500 text-center py-6">No insights yet. Log daily check-ins and mock tests.</span>
             )}
           </div>
         </div>
 
       </section>
 
-      {/* 3. CORE SUB-MODULE CONTROL TABS (vault, planner, analytics) */}
+      {/* 3. OVERALL ANALYSIS SECTION (ALWAYS VISIBLE) */}
+      <section className="glass-card rounded-lg p-5 md:p-6 flex flex-col gap-6 shadow-sm">
+        <div className="flex flex-col gap-1 border-b border-slate-800 pb-3">
+          <h2 className="text-sm font-bold text-white font-space uppercase tracking-wider flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-[#00A389]" />
+            Overall Performance & Stress Calibration
+          </h2>
+          <p className="text-xs text-slate-400">Real-time overlay of academic scores against physiological burnout metrics.</p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          {/* Daily Overlay Chart */}
+          <div className="p-4 bg-slate-950/40 border border-slate-800/80 rounded-md flex flex-col gap-4">
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                <TrendingUp className="w-4 h-4 text-[#00A389]" />
+                Daily Burnout vs Exam Score
+              </span>
+              <span className="text-[10px] text-slate-400">Overlays daily stress levels against completion score percentages</span>
+            </div>
+            
+            <div className="w-full h-[220px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                  <XAxis dataKey="day" stroke="#94a3b8" fontSize={10} tickLine={false} />
+                  <YAxis yAxisId="left" stroke="#ef4444" fontSize={10} tickLine={false} label={{ value: 'Burnout %', angle: -90, position: 'insideLeft', style: { fill: '#ef4444', fontSize: 9 } }} />
+                  <YAxis yAxisId="right" orientation="right" stroke="#00A389" fontSize={10} tickLine={false} label={{ value: 'Mock Score %', angle: 90, position: 'insideRight', style: { fill: '#00A389', fontSize: 9 } }} />
+                  <Tooltip contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', borderRadius: '6px', fontSize: '10px', color: '#cbd5e1' }} />
+                  <Legend wrapperStyle={{ fontSize: '10px' }} />
+                  <Bar yAxisId="left" dataKey="burnout" name="Burnout Risk" fill="rgba(239, 68, 68, 0.2)" stroke="#ef4444" radius={[2, 2, 0, 0]} />
+                  <Line yAxisId="right" type="monotone" dataKey="score" name="Test Score" stroke="#00A389" strokeWidth={2} dot={{ fill: '#00A389', r: 3 }} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Subject performance vs stress breakdown */}
+          <div className="p-4 bg-slate-950/40 border border-slate-800/80 rounded-md flex flex-col gap-4">
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                <BookOpen className="w-4 h-4 text-indigo-400" />
+                Subject Performance vs. Stress
+              </span>
+              <span className="text-[10px] text-slate-400">Ties specific subject performance against mental stress loads</span>
+            </div>
+            
+            <div className="w-full h-[220px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={subjectData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                  <XAxis dataKey="subject" stroke="#94a3b8" fontSize={10} tickLine={false} />
+                  <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} domain={[0, 100]} />
+                  <Tooltip contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', borderRadius: '6px', fontSize: '10px', color: '#cbd5e1' }} />
+                  <Legend wrapperStyle={{ fontSize: '10px' }} />
+                  <Bar dataKey="Score" name="Mock Avg %" fill="#00A389" radius={[2, 2, 0, 0]} maxBarSize={30} />
+                  <Bar dataKey="Stress" name="Mental Strain %" fill="#f59e0b" radius={[2, 2, 0, 0]} maxBarSize={30} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Subject recommendations */}
+        <div className="p-4 bg-indigo-950/30 border border-indigo-500/20 rounded-md flex flex-col gap-2">
+          <span className="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
+            <Sparkles className="w-4 h-4 text-indigo-400" />
+            Gemini Subject & Stress Calibration Insights
+          </span>
+          <ul className="list-disc pl-5 text-[11px] text-slate-300 leading-relaxed flex flex-col gap-1.5">
+            {subjectData.map((sub, idx) => {
+              if (sub.Stress > 60 && sub.Score < 65) {
+                return (
+                  <li key={idx}>
+                    Critical Area in <strong className="text-rose-450">{sub.subject}</strong>: Low mock score ({sub.Score}%) with high cognitive strain ({sub.Stress}%). Gemini suggests attempting easy sectional questions and executing a 4-cycle Box Breathing session before study.
+                  </li>
+                );
+              }
+              if (sub.Score > 75 && sub.Stress < 40) {
+                return (
+                  <li key={idx}>
+                    Strong Hold in <strong className="text-emerald-400">{sub.subject}</strong>: Great accuracy ({sub.Score}%) under low stress. Maintain this momentum! Use review slots here to optimize other subjects.
+                  </li>
+                );
+              }
+              return (
+                <li key={idx}>
+                  Steady Progress in <strong className="text-indigo-300">{sub.subject}</strong>: Current accuracy of {sub.Score}% with moderate workload stress. Review formulas daily.
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </section>
+
+      {/* 4. CORE SUB-MODULE CONTROL TABS (Study Planner / Exam Vault) & AI MENTOR */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* LEFT TWO COLUMNS: Active Sub Tab Container */}
-        <div className="lg:col-span-2 bg-slate-900/40 border border-slate-800/80 backdrop-blur-md rounded-md p-5 md:p-6 flex flex-col gap-6 shadow-md">
+        <div className="lg:col-span-2 glass-card rounded-lg p-5 md:p-6 flex flex-col gap-6 shadow-sm">
           
-          <div className="flex gap-2 p-1 bg-slate-950/40 border border-slate-850 rounded-md self-start">
+          <div className="flex gap-2 p-1 bg-slate-900 border border-slate-800 rounded-md self-start select-none">
             <button
               onClick={() => setActiveSubTab('planner')}
               className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                activeSubTab === 'planner' ? 'bg-slate-800 text-white' : 'text-gray-400 hover:text-white'
+                activeSubTab === 'planner' 
+                  ? 'bg-slate-800 text-white border border-slate-700 shadow-sm' 
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               Study Planner
@@ -583,18 +748,12 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
             <button
               onClick={() => setActiveSubTab('vault')}
               className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                activeSubTab === 'vault' ? 'bg-slate-800 text-white' : 'text-gray-400 hover:text-white'
+                activeSubTab === 'vault' 
+                  ? 'bg-slate-800 text-white border border-slate-700 shadow-sm' 
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               Exam Vault
-            </button>
-            <button
-              onClick={() => setActiveSubTab('analytics')}
-              className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                activeSubTab === 'analytics' ? 'bg-slate-800 text-white' : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              Overlay Analysis
             </button>
           </div>
 
@@ -613,30 +772,6 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
             />
           )}
 
-          {activeSubTab === 'analytics' && (
-            <div className="flex flex-col gap-4 animate-fade-in">
-              <div className="flex flex-col">
-                <span className="text-xs font-bold text-white flex items-center gap-1.5"><TrendingUp className="w-4 h-4 text-[#00C9B0]" /> Performance vs. Emotion Overlay</span>
-                <span className="text-[10px] text-gray-500">Dual-axis correlation of mock scores (lines) against stress burnout (bars)</span>
-              </div>
-              
-              <div className="w-full h-[220px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" />
-                    <XAxis dataKey="day" stroke="#94a3b8" fontSize={10} tickLine={false} />
-                    <YAxis yAxisId="left" stroke="#ef4444" fontSize={10} tickLine={false} label={{ value: 'Burnout %', angle: -90, position: 'insideLeft', style: { fill: '#ef4444', fontSize: 9 } }} />
-                    <YAxis yAxisId="right" orientation="right" stroke="#00C9B0" fontSize={10} tickLine={false} label={{ value: 'Mock Score %', angle: 90, position: 'insideRight', style: { fill: '#00C9B0', fontSize: 9 } }} />
-                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '4px', fontSize: '10px' }} />
-                    <Legend wrapperStyle={{ fontSize: '10px' }} />
-                    <Bar yAxisId="left" dataKey="burnout" name="Burnout Risk" fill="rgba(239, 68, 68, 0.4)" stroke="#ef4444" radius={[2, 2, 0, 0]} />
-                    <Line yAxisId="right" type="monotone" dataKey="score" name="Test Score" stroke="#00C9B0" strokeWidth={2} dot={{ fill: '#00C9B0', r: 3 }} />
-                  </ComposedChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
-
         </div>
 
         {/* RIGHT ONE COLUMN: AI Mentor & Breathing Card */}
@@ -646,14 +781,14 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
           <BreathingCard onGroundingFeedback={handleGroundingBoxBreathing} />
 
           {/* AI Mentor Chatbot Card */}
-          <div className="glass-card border border-slate-800 rounded-md p-5 flex flex-col h-[280px] shadow-sm">
+          <div className="glass-card rounded-lg p-5 flex flex-col h-[280px] shadow-sm">
             <div className="flex items-center gap-2 border-b border-slate-800 pb-2 mb-3">
-              <div className="p-1 rounded bg-[#00C9B0]/10 border border-[#00C9B0]/20 text-[#00C9B0]">
+              <div className="p-1 rounded bg-[#00A389]/10 border border-[#00A389]/20 text-[#00A389]">
                 <Sparkles className="w-3.5 h-3.5" />
               </div>
               <div className="flex flex-col">
-                <span className="text-xs font-bold text-white">AI Mentor Sandbox</span>
-                <span className="text-[9px] text-gray-500">Powered by Gemini Pro (Language: {profile.language === 'hi' ? 'Hindi' : 'English'})</span>
+                <span className="text-xs font-bold text-white font-space">AI MENTOR</span>
+                <span className="text-[9px] text-slate-400">Powered by Gemini Pro (Language: {profile.language === 'hi' ? 'Hindi' : 'English'})</span>
               </div>
             </div>
 
@@ -662,15 +797,15 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
               {chatHistory.map((chat, idx) => (
                 <div key={idx} className={`p-2 rounded-md ${
                   chat.role === 'user' 
-                    ? 'bg-slate-950/60 border border-slate-850 text-gray-300 self-end max-w-[85%]' 
-                    : 'bg-[#00C9B0]/5 border border-[#00C9B0]/10 text-white self-start max-w-[85%]'
+                    ? 'bg-slate-800 border border-slate-750 text-slate-300 self-end max-w-[85%]' 
+                    : 'bg-indigo-950/40 border border-indigo-500/20 text-indigo-200 self-start max-w-[85%]'
                 }`}>
                   {chat.text}
                 </div>
               ))}
               {chatLoading && (
-                <div className="p-2 bg-slate-900 border border-slate-850 text-gray-400 rounded-md self-start flex items-center gap-1.5">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#00C9B0]" />
+                <div className="p-2 bg-slate-900 border border-slate-800 text-slate-400 rounded-md self-start flex items-center gap-1.5">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#00A389]" />
                   Thinking...
                 </div>
               )}
@@ -685,12 +820,12 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
                 placeholder="Ask your mentor..."
                 value={chatMessage}
                 onChange={(e) => setChatMessage(e.target.value)}
-                className="flex-1 px-3 py-1.5 text-[11px] border border-slate-800 bg-slate-950/40 rounded-md text-white focus:ring-1 focus:ring-[#00C9B0] focus:outline-none"
+                className="flex-1 px-3 py-1.5 text-[11px] border border-slate-800 bg-slate-950 rounded-md text-white focus:ring-1 focus:ring-[#00A389] focus:outline-none placeholder-slate-500"
               />
               <button
                 type="submit"
                 disabled={chatLoading || !chatMessage.trim()}
-                className="p-1.5 bg-[#00C9B0] hover:bg-[#00b29c] text-[#060B18] rounded-md transition-all cursor-pointer disabled:opacity-50"
+                className="p-1.5 bg-[#00A389] hover:bg-[#00927a] text-white rounded-md transition-all cursor-pointer disabled:opacity-50"
               >
                 <Send className="w-3.5 h-3.5" />
               </button>
@@ -701,7 +836,7 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
 
       </section>
 
-      {/* 4. MODAL OVERLAYS */}
+      {/* 5. MODAL OVERLAYS */}
       
       {/* Daily check-in modal */}
       {showCheckin && (
@@ -714,16 +849,16 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
 
       {/* Quick Vent Mic Modal */}
       {showVentModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-md p-5 shadow-2xl relative flex flex-col gap-4 animate-scale-up">
-            <div className="flex justify-between items-center border-b border-slate-850 pb-2">
+            <div className="flex justify-between items-center border-b border-slate-800 pb-2">
               <span className="text-xs font-bold text-white font-space uppercase tracking-wider">Quick Vocal Vent</span>
               <button 
                 onClick={() => {
                   stopRecording();
                   setShowVentModal(false);
                 }} 
-                className="text-gray-400 hover:text-white p-1"
+                className="text-slate-400 hover:text-white p-1 hover:bg-slate-800 rounded transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -738,7 +873,7 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
                 className={`w-16 h-16 rounded-full flex items-center justify-center cursor-pointer transition-all border shadow-lg ${
                   isRecording 
                     ? 'bg-red-500 border-red-500 text-white animate-pulse shadow-red-500/20' 
-                    : 'bg-[#00C9B0]/10 border-[#00C9B0]/20 text-[#00C9B0] hover:bg-[#00C9B0] hover:text-[#060B18]'
+                    : 'bg-[#00A389]/10 border-[#00A389]/20 text-[#00A389] hover:bg-[#00A389] hover:text-white'
                 }`}
               >
                 {isRecording ? <MicOff className="w-6 h-6 animate-bounce" /> : <Mic className="w-6 h-6" />}
@@ -748,7 +883,7 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
                 <span className="text-xs font-bold text-white">
                   {isRecording ? 'Listening... Speak now (Max 10s)' : 'Click mic to start speaking'}
                 </span>
-                <span className="text-[10px] text-gray-500">
+                <span className="text-[10px] text-slate-400">
                   {profile.language === 'hi' ? 'बोलने की भाषा: हिन्दी' : 'Venting Language: English'}
                 </span>
               </div>
@@ -758,25 +893,25 @@ export default function Dashboard({ profile, onUpdateProfile, onLogout }) {
                 value={ventText}
                 onChange={(e) => setVentText(e.target.value)}
                 placeholder="Your voice transcription will appear here. Or type directly to vent..."
-                className="w-full h-20 p-3 text-xs bg-slate-950/60 border border-slate-850 rounded text-white focus:ring-1 focus:ring-[#00C9B0] focus:outline-none placeholder-gray-600 resize-none font-semibold"
+                className="w-full h-20 p-3 text-xs bg-slate-950 border border-slate-800 rounded text-white focus:ring-1 focus:ring-[#00A389] focus:outline-none placeholder-slate-600 resize-none font-semibold"
               />
             </div>
 
-            <div className="flex gap-3 border-t border-slate-850 pt-3">
+            <div className="flex gap-3 border-t border-slate-800 pt-3">
               <button
                 onClick={() => {
                   stopRecording();
                   setShowVentModal(false);
                 }}
                 disabled={analyzingVent}
-                className="flex-1 bg-transparent hover:bg-slate-800 border border-slate-800 hover:border-slate-750 text-white py-2 text-xs font-bold rounded-md transition-all cursor-pointer"
+                className="flex-1 bg-transparent hover:bg-slate-850 border border-slate-800 text-slate-300 py-2 text-xs font-bold rounded-md transition-all cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSendVent}
                 disabled={analyzingVent || !ventText.trim()}
-                className="flex-1 bg-[#00C9B0] hover:bg-[#00b29c] text-[#060B18] py-2 text-xs font-bold rounded-md transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="flex-1 bg-[#00A389] hover:bg-[#00927a] text-white py-2 text-xs font-bold rounded-md transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 {analyzingVent ? (
                   <>

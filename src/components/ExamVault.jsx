@@ -190,19 +190,19 @@ export default function ExamVault({ user, currentCheckin, onTestAdded }) {
   };
 
   return (
-    <div className="flex flex-col gap-5 relative">
+    <div className="flex flex-col gap-5 relative text-slate-300">
       
       {/* Upper header */}
       <div className="flex justify-between items-center border-b border-slate-800 pb-3">
         <div className="flex items-center gap-2">
-          <FileText className="w-5 h-5 text-[#00C9B0]" />
+          <FileText className="w-5 h-5 text-[#00A389]" />
           <h2 className="text-sm font-bold text-white font-space uppercase tracking-wider">
             {t('exam_vault')}
           </h2>
         </div>
         <button
           onClick={() => setShowAddForm(true)}
-          className="px-3 py-1.5 bg-[#00C9B0]/10 border border-[#00C9B0]/20 text-[#00C9B0] hover:bg-[#00C9B0]/25 hover:text-white rounded-md text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 focus:ring-2 focus:ring-[#00C9B0]"
+          className="px-3 py-1.5 bg-[#00A389]/10 border border-[#00A389]/20 text-[#00A389] hover:bg-[#00A389]/25 hover:text-white rounded-md text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 focus:ring-2 focus:ring-[#00A389]"
         >
           <Plus className="w-3.5 h-3.5" />
           {t('add_test')}
@@ -210,7 +210,7 @@ export default function ExamVault({ user, currentCheckin, onTestAdded }) {
       </div>
 
       {/* Tabs list */}
-      <div className="flex gap-2 p-1 bg-slate-950/40 border border-slate-850 rounded-md select-none">
+      <div className="flex gap-2 p-1 bg-slate-900 border border-slate-800 rounded-md select-none">
         {['upcoming', 'ongoing', 'completed'].map(tab => (
           <button
             key={tab}
@@ -218,7 +218,7 @@ export default function ExamVault({ user, currentCheckin, onTestAdded }) {
             className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${
               activeTab === tab 
                 ? 'bg-slate-800 text-white border border-slate-700 shadow-sm'
-                : 'text-gray-400 hover:text-white hover:bg-slate-900/50'
+                : 'text-slate-400 hover:text-white hover:bg-slate-850/35'
             }`}
           >
             {tab === 'upcoming' && `Upcoming (${upcomingTests.length})`}
@@ -235,34 +235,34 @@ export default function ExamVault({ user, currentCheckin, onTestAdded }) {
         {activeTab === 'upcoming' && (
           upcomingTests.length > 0 ? (
             upcomingTests.map(test => (
-              <div key={test.id} className="p-4 bg-slate-900/40 border border-slate-800 rounded-md flex justify-between items-center gap-4 hover:border-slate-700 transition-all">
+              <div key={test.id} className="p-4 bg-slate-950/20 border border-slate-850 rounded-md flex justify-between items-center gap-4 hover:border-slate-750 transition-all shadow-sm">
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-extrabold text-white">{test.name}</span>
-                    <span className="text-[9px] font-space font-bold px-2 py-0.5 rounded-full bg-slate-800 text-gray-400">
+                    <span className="text-[9px] font-space font-bold px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400">
                       {test.type}
                     </span>
                   </div>
-                  <div className="flex gap-4 text-[10px] text-gray-500 font-medium font-space">
+                  <div className="flex gap-4 text-[10px] text-slate-450 font-medium font-space">
                     <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-[#00C9B0]" />
+                      <Calendar className="w-3 h-3 text-[#00A389]" />
                       {new Date(test.dateTime).toLocaleDateString()}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-[#00C9B0]" />
+                      <Clock className="w-3 h-3 text-[#00A389]" />
                       {new Date(test.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
                 </div>
 
                 <div className="text-right flex flex-col gap-0.5 font-space">
-                  <span className="text-xs text-gray-400">Total Marks</span>
-                  <span className="text-sm font-bold text-white">{test.totalMarks}</span>
+                  <span className="text-[9px] text-slate-500">Total Marks</span>
+                  <span className="text-sm font-bold text-[#00A389]">{test.totalMarks}</span>
                 </div>
               </div>
             ))
           ) : (
-            <span className="text-xs text-gray-500 text-center py-4">No upcoming mock tests scheduled.</span>
+            <span className="text-xs text-slate-550 text-center py-4">No upcoming mock tests scheduled.</span>
           )
         )}
 
@@ -270,15 +270,15 @@ export default function ExamVault({ user, currentCheckin, onTestAdded }) {
         {activeTab === 'ongoing' && (
           ongoingTests.length > 0 ? (
             ongoingTests.map(test => (
-              <div key={test.id} className="p-4 bg-indigo-950/10 border border-indigo-900/40 rounded-md flex justify-between items-center gap-4 hover:border-indigo-800/60 transition-all">
-                <div className="flex flex-col gap-1">
+              <div key={test.id} className="p-4 bg-indigo-950/20 border border-indigo-900/30 rounded-md flex justify-between items-center gap-4 hover:border-indigo-800/50 transition-all">
+                <div className="flex flex-col gap-1.5">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-extrabold text-white">{test.name}</span>
-                    <span className="text-[9px] font-space font-bold px-2 py-0.5 rounded-full bg-indigo-900/40 text-indigo-400 border border-indigo-900/20">
+                    <span className="text-[9px] font-space font-bold px-2 py-0.5 rounded bg-indigo-950 border border-indigo-900/40 text-indigo-305">
                       {test.type}
                     </span>
                   </div>
-                  <span className="text-[10px] text-[#00C9B0] font-semibold flex items-center gap-1 animate-pulse">
+                  <span className="text-[10px] text-[#00A389] font-semibold flex items-center gap-1 animate-pulse">
                     <AlertCircle className="w-3 h-3" /> Test time active!
                   </span>
                 </div>
@@ -286,14 +286,14 @@ export default function ExamVault({ user, currentCheckin, onTestAdded }) {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleLaunchFocus(test)}
-                    className="px-3 py-1.5 bg-[#00C9B0] hover:bg-[#00b29c] text-[#060B18] text-xs font-bold rounded-md transition-all cursor-pointer flex items-center gap-1 focus:ring-2 focus:ring-[#00C9B0]"
+                    className="px-3 py-1.5 bg-[#00A389] hover:bg-[#00927a] text-white text-xs font-bold rounded-md transition-all cursor-pointer flex items-center gap-1 focus:ring-2 focus:ring-[#00A389]"
                   >
                     <Play className="w-3.5 h-3.5" />
                     Focus Mode
                   </button>
                   <button
                     onClick={() => setLogScoreTest(test)}
-                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-white text-xs font-bold rounded-md border border-slate-700 transition-all cursor-pointer"
+                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-md border border-slate-700 transition-all cursor-pointer"
                   >
                     Log Score
                   </button>
@@ -301,7 +301,7 @@ export default function ExamVault({ user, currentCheckin, onTestAdded }) {
               </div>
             ))
           ) : (
-            <span className="text-xs text-gray-500 text-center py-4">No tests are active right now.</span>
+            <span className="text-xs text-slate-550 text-center py-4">No tests are active right now.</span>
           )
         )}
 
@@ -309,16 +309,16 @@ export default function ExamVault({ user, currentCheckin, onTestAdded }) {
         {activeTab === 'completed' && (
           completedTests.length > 0 ? (
             completedTests.map(test => (
-              <div key={test.id} className="p-4 bg-slate-900/20 border border-slate-800 rounded-md flex justify-between items-center gap-4 hover:border-slate-750 transition-all">
+              <div key={test.id} className="p-4 bg-slate-950/20 border border-slate-850 rounded-md flex justify-between items-center gap-4 hover:border-slate-750 transition-all shadow-sm">
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-extrabold text-white">{test.name}</span>
-                    <span className="text-[9px] font-space font-bold px-2 py-0.5 rounded-full bg-slate-850 text-gray-400">
+                    <span className="text-[9px] font-space font-bold px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400">
                       {test.type}
                     </span>
                   </div>
                   {/* Emotional Tag overlay */}
-                  <div className="flex items-center gap-1 text-[9px] font-semibold text-gray-500 bg-slate-950/20 px-2 py-0.5 rounded w-max border border-slate-850">
+                  <div className="flex items-center gap-1 text-[9px] font-semibold text-slate-400 bg-slate-950/40 px-2 py-0.5 rounded w-max border border-slate-800">
                     <span className="text-[10px] text-indigo-400">Mind State:</span>
                     <span>{test.emotionalTag || 'No log'}</span>
                   </div>
@@ -326,14 +326,14 @@ export default function ExamVault({ user, currentCheckin, onTestAdded }) {
 
                 <div className="flex gap-4 items-center">
                   <div className="text-right flex flex-col gap-0.5 font-space">
-                    <span className="text-[9px] text-gray-500">Score</span>
-                    <span className="text-sm font-extrabold text-[#00C9B0]">{test.score}/{test.totalMarks}</span>
-                    <span className="text-[9px] text-gray-400">({test.percentage}%)</span>
+                    <span className="text-[9px] text-slate-500">Score</span>
+                    <span className="text-sm font-extrabold text-[#00A389]">{test.score}/{test.totalMarks}</span>
+                    <span className="text-[9px] text-slate-400">({test.percentage}%)</span>
                   </div>
 
                   {test.rank && (
                     <div className="text-right flex flex-col gap-0.5 font-space pl-3 border-l border-slate-800">
-                      <span className="text-[9px] text-gray-500 flex items-center gap-0.5"><Trophy className="w-2.5 h-2.5 text-amber-500" /> Rank</span>
+                      <span className="text-[9px] text-slate-500 flex items-center gap-0.5"><Trophy className="w-2.5 h-2.5 text-amber-500" /> Rank</span>
                       <span className="text-sm font-bold text-white">#{test.rank}</span>
                     </div>
                   )}
@@ -341,96 +341,96 @@ export default function ExamVault({ user, currentCheckin, onTestAdded }) {
               </div>
             ))
           ) : (
-            <span className="text-xs text-gray-500 text-center py-4">No completed tests logged.</span>
+            <span className="text-xs text-slate-550 text-center py-4">No completed tests logged.</span>
           )
         )}
       </div>
 
       {/* POPUP MODAL: ADD TEST FORM */}
       {showAddForm && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <form 
             onSubmit={handleAddTest}
-            className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-md shadow-2xl relative flex flex-col gap-4 p-5 md:p-6 animate-scale-up"
+            className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-md shadow-2xl relative flex flex-col gap-4 p-5 md:p-6 animate-scale-up text-slate-300"
           >
             <div className="flex justify-between items-center border-b border-slate-800 pb-2">
               <h3 className="text-sm font-bold text-white font-space uppercase tracking-wider">Schedule Test Entry</h3>
               <button 
                 type="button" 
                 onClick={() => setShowAddForm(false)}
-                className="text-gray-400 hover:text-white p-1 rounded hover:bg-slate-800 cursor-pointer"
+                className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-850 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="flex flex-col gap-3">
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Test Name</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Test Name</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Allen Mock test #10"
                   value={testName}
                   onChange={(e) => setTestName(e.target.value)}
-                  className="w-full px-3 py-2 text-xs border border-slate-800 bg-slate-950/40 rounded-md text-white focus:ring-2 focus:ring-[#00C9B0] focus:outline-none"
+                  className="premium-input w-full"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Test Type</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Test Type</label>
                   <select
                     value={testType}
                     onChange={(e) => setTestType(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-800 bg-slate-950/40 rounded-md text-white focus:ring-2 focus:ring-[#00C9B0] focus:outline-none cursor-pointer"
+                    className="premium-input w-full cursor-pointer bg-slate-950"
                   >
-                    <option value="Mock Test" className="bg-slate-900">Mock Test</option>
-                    <option value="Full Syllabus Test" className="bg-slate-900">Full Syllabus</option>
-                    <option value="Chapter Test" className="bg-slate-900">Chapter Test</option>
-                    <option value="Sectional Test" className="bg-slate-900">Sectional Test</option>
-                    <option value="Main Exam" className="bg-slate-900">Main Exam</option>
+                    <option value="Mock Test">Mock Test</option>
+                    <option value="Full Syllabus Test">Full Syllabus</option>
+                    <option value="Chapter Test">Chapter Test</option>
+                    <option value="Sectional Test">Sectional Test</option>
+                    <option value="Main Exam">Main Exam</option>
                   </select>
                 </div>
 
-                <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Marks</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Marks</label>
                   <input
                     type="number"
                     required
                     value={totalMarks}
                     onChange={(e) => setTotalMarks(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-800 bg-slate-950/40 rounded-md text-white focus:ring-2 focus:ring-[#00C9B0] focus:outline-none font-space"
+                    className="premium-input w-full font-space"
                   />
                 </div>
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Date & Time</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Date & Time</label>
                 <input
                   type="datetime-local"
                   required
                   value={dateTime}
                   onChange={(e) => setDateTime(e.target.value)}
-                  className="w-full px-3 py-2 text-xs border border-slate-800 bg-slate-950/40 rounded-md text-white focus:ring-2 focus:ring-[#00C9B0] focus:outline-none font-space"
+                  className="premium-input w-full font-space"
                 />
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Description (Optional)</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Description (Optional)</label>
                 <textarea
                   placeholder="Covers organic chemistry and thermodynamics..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows="2"
-                  className="w-full px-3 py-2 text-xs border border-slate-800 bg-slate-950/40 rounded-md text-white focus:ring-2 focus:ring-[#00C9B0] focus:outline-none"
+                  className="premium-input w-full resize-none"
                 />
               </div>
             </div>
 
             <button
               type="submit"
-              className="mt-2 w-full bg-[#00C9B0] hover:bg-[#00b29c] text-[#060B18] py-2 text-xs font-bold rounded-md transition-all shadow-md cursor-pointer"
+              className="mt-2 w-full bg-[#00A389] hover:bg-[#00927a] text-white py-2.5 text-xs font-bold rounded-md transition-all shadow-md cursor-pointer"
             >
               Add Scheduled Test
             </button>
@@ -440,25 +440,25 @@ export default function ExamVault({ user, currentCheckin, onTestAdded }) {
 
       {/* POPUP MODAL: LOG SCORE FORM */}
       {logScoreTest && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <form 
             onSubmit={handleLogScoreSubmit}
-            className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-md shadow-2xl relative flex flex-col gap-4 p-5 md:p-6 animate-scale-up"
+            className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-md shadow-2xl relative flex flex-col gap-4 p-5 md:p-6 animate-scale-up text-slate-300"
           >
             <div className="flex justify-between items-center border-b border-slate-800 pb-2">
               <h3 className="text-sm font-bold text-white font-space uppercase tracking-wider">Log Score: {logScoreTest.name}</h3>
               <button 
                 type="button" 
                 onClick={() => setLogScoreTest(null)}
-                className="text-gray-400 hover:text-white p-1 rounded hover:bg-slate-800 cursor-pointer"
+                className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-850 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="flex flex-col gap-3">
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Obtained Marks (Max: {logScoreTest.totalMarks})</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Obtained Marks (Max: {logScoreTest.totalMarks})</label>
                 <input
                   type="number"
                   min="0"
@@ -467,31 +467,31 @@ export default function ExamVault({ user, currentCheckin, onTestAdded }) {
                   placeholder="e.g. 198"
                   value={obtainedScore}
                   onChange={(e) => setObtainedScore(e.target.value)}
-                  className="w-full px-3 py-2 text-xs border border-slate-800 bg-slate-950/40 rounded-md text-white focus:ring-2 focus:ring-[#00C9B0] focus:outline-none font-space"
+                  className="premium-input w-full font-space"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Rank (Optional)</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rank (Optional)</label>
                   <input
                     type="number"
                     placeholder="e.g. 248"
                     value={rank}
                     onChange={(e) => setRank(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-800 bg-slate-950/40 rounded-md text-white focus:ring-2 focus:ring-[#00C9B0] focus:outline-none font-space"
+                    className="premium-input w-full font-space"
                   />
                 </div>
 
-                <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Percentile (Optional)</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Percentile (Optional)</label>
                   <input
                     type="number"
                     step="0.001"
                     placeholder="e.g. 98.42"
                     value={percentile}
                     onChange={(e) => setPercentile(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-800 bg-slate-950/40 rounded-md text-white focus:ring-2 focus:ring-[#00C9B0] focus:outline-none font-space"
+                    className="premium-input w-full font-space"
                   />
                 </div>
               </div>
@@ -499,7 +499,7 @@ export default function ExamVault({ user, currentCheckin, onTestAdded }) {
 
             <button
               type="submit"
-              className="mt-2 w-full bg-[#00C9B0] hover:bg-[#00b29c] text-[#060B18] py-2 text-xs font-bold rounded-md transition-all shadow-md cursor-pointer"
+              className="mt-2 w-full bg-[#00A389] hover:bg-[#00927a] text-white py-2.5 text-xs font-bold rounded-md transition-all shadow-md cursor-pointer"
             >
               Submit Results & Tag Emotions
             </button>
@@ -509,19 +509,19 @@ export default function ExamVault({ user, currentCheckin, onTestAdded }) {
 
       {/* FULL-SCREEN OVERLAY: FOCUS MODE */}
       {focusActive && focusModeTest && (
-        <div className="fixed inset-0 bg-[#060B18] z-50 flex flex-col justify-between p-6 md:p-12 animate-fade-in">
+        <div className="fixed inset-0 bg-[#0b0f19] z-50 flex flex-col justify-between p-6 md:p-12 animate-fade-in text-slate-300">
           
           {/* Header */}
-          <div className="flex justify-between items-center border-b border-slate-850 pb-4">
+          <div className="flex justify-between items-center border-b border-slate-800 pb-4">
             <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#00C9B0] animate-pulse" />
-              <span className="text-xs font-bold font-space uppercase text-gray-400 tracking-wider">
+              <div className="w-2.5 h-2.5 rounded-full bg-[#00A389] animate-pulse" />
+              <span className="text-xs font-bold font-space uppercase text-slate-500 tracking-wider">
                 Ongoing Focus Mode
               </span>
             </div>
             <button
               onClick={handleExitFocus}
-              className="px-3.5 py-1.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:text-white rounded-md text-[10px] font-bold text-gray-400 transition-all cursor-pointer"
+              className="px-3.5 py-1.5 bg-slate-900 border border-slate-800 hover:border-slate-700 hover:text-white rounded-md text-[10px] font-bold text-slate-400 transition-all cursor-pointer shadow-sm"
             >
               Exit Focus Session
             </button>
@@ -533,42 +533,42 @@ export default function ExamVault({ user, currentCheckin, onTestAdded }) {
               <span className="text-2xl font-extrabold text-white tracking-tight leading-tight">
                 {focusModeTest.name}
               </span>
-              <span className="text-xs text-[#00C9B0] font-space font-medium uppercase tracking-wider">
+              <span className="text-xs text-[#00A389] font-space font-medium uppercase tracking-wider">
                 Active Mock Simulation
               </span>
             </div>
 
             {/* Simulated Time Counter */}
-            <div className="flex flex-col items-center justify-center p-8 bg-slate-950/60 border border-slate-850 rounded-full w-48 h-48 shadow-lg">
-              <Clock className="w-5 h-5 text-gray-500 mb-1" />
+            <div className="flex flex-col items-center justify-center p-8 bg-slate-900/60 border border-slate-800 rounded-full w-48 h-48 shadow-lg">
+              <Clock className="w-5 h-5 text-slate-500 mb-1" />
               <span className="text-3xl font-extrabold font-space text-white tracking-tight">
                 {formatTime(focusTimeLeft)}
               </span>
-              <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">
+              <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">
                 Time Remaining
               </span>
             </div>
 
             <div className="flex flex-col items-center gap-3">
-              <p className="text-xs text-gray-400 max-w-[280px]">
+              <p className="text-xs text-slate-500 max-w-[280px]">
                 Feeling anxious or facing time panic? Take a brief deep breath session to reset.
               </p>
               
               <button
                 onClick={() => setShowBreathingInFocus(!showBreathingInFocus)}
-                className="px-4 py-2 bg-indigo-650 hover:bg-indigo-700 text-white rounded-md text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 focus:ring-2 focus:ring-[#00C9B0] focus:outline-none"
+                className="px-4 py-2 bg-indigo-650 hover:bg-indigo-700 text-white rounded-md text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 focus:ring-2 focus:ring-[#00A389] focus:outline-none"
               >
-                <Wind className="w-4 h-4 text-indigo-300" />
+                <Wind className="w-4 h-4 text-indigo-200" />
                 {showBreathingInFocus ? 'Hide Box Breathing' : 'Box Breathing Reset'}
               </button>
             </div>
           </div>
 
           {/* Footer button */}
-          <div className="w-full flex justify-center border-t border-slate-850 pt-4">
+          <div className="w-full flex justify-center border-t border-slate-800 pt-4">
             <button
               onClick={() => setLogScoreTest(focusModeTest)}
-              className="px-6 py-2.5 bg-[#00C9B0] hover:bg-[#00b29c] text-[#060B18] text-xs font-bold rounded-md transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+              className="px-6 py-2.5 bg-[#00A389] hover:bg-[#00927a] text-white text-xs font-bold rounded-md transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
             >
               <CheckCircle className="w-4 h-4" />
               Submit Test & Enter Score
@@ -578,22 +578,22 @@ export default function ExamVault({ user, currentCheckin, onTestAdded }) {
           {/* Floating Breathing block in focus mode */}
           {showBreathingInFocus && (
             <div className="fixed inset-x-4 bottom-20 md:left-auto md:right-12 md:bottom-12 md:max-w-xs z-50">
-              <div className="p-4 bg-slate-900 border border-slate-800 rounded-md shadow-2xl">
+              <div className="p-4 bg-slate-900 border border-slate-800 rounded-md shadow-2xl text-slate-350">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-[10px] font-bold text-[#00C9B0] uppercase tracking-wider">Quick Box Breathing</span>
+                  <span className="text-[10px] font-bold text-[#00A389] uppercase tracking-wider">Quick Box Breathing</span>
                   <button 
                     onClick={() => setShowBreathingInFocus(false)}
-                    className="text-gray-400 hover:text-white"
+                    className="text-slate-500 hover:text-white cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
                 {/* Embedded quick breathing visualizer */}
                 <div className="flex flex-col items-center justify-center p-3 gap-3">
-                  <div className="w-16 h-16 rounded-full bg-[#00C9B0]/20 animate-pulse flex items-center justify-center text-[10px] text-white font-bold font-space uppercase">
+                  <div className="w-16 h-16 rounded-full bg-[#00A389]/10 animate-pulse flex items-center justify-center text-[10px] text-[#00A389] font-bold font-space uppercase">
                     Breathe
                   </div>
-                  <span className="text-[10px] text-gray-400 text-center leading-relaxed">
+                  <span className="text-[10px] text-slate-500 text-center leading-relaxed">
                     Box Breathing (4-4-4-4). Inhale, Hold, Exhale, Hold. Repeat.
                   </span>
                 </div>
