@@ -1,57 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'Space Grotesk', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Space Mono', ui-monospace, monospace;
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: #f9fafb; /* bg-gray-50 */
+  background-color: #060b18; /* Deep navy background */
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-  color: #111827; /* text-gray-900 */
+  color: #f3f4f6; /* light gray text */
 }
 
+/* Space Mono utilities */
 .font-space {
   font-family: var(--font-mono);
 }
 
-/* Scrollbar styling */
+/* Glassmorphism card utility */
+.glass-card {
+  background: rgba(17, 24, 39, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(6, 11, 24, 0.5);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db; /* gray-300 */
+  background: rgba(0, 201, 176, 0.2); /* Teal translucent */
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af; /* gray-400 */
+  background: rgba(0, 201, 176, 0.4); /* Teal active */
 }
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 @keyframes pulseBorder {
-  0%, 100% { border-color: #e5e7eb; }
-  50% { border-color: #6366f1; }
+  0%, 100% { border-color: rgba(0, 201, 176, 0.1); }
+  50% { border-color: rgba(0, 201, 176, 0.5); }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scale-up {
+  animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-pulse-border {
-  animation: pulseBorder 2s infinite ease-in-out;
+  animation: pulseBorder 2.5s infinite ease-in-out;
+}
+
+/* Box Breathing Circle Animations */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); background-color: rgba(0, 201, 176, 0.15); box-shadow: 0 0 20px rgba(0, 201, 176, 0.2); } /* Inhale complete/hold start */
+  25% { transform: scale(1.6); background-color: rgba(0, 201, 176, 0.3); box-shadow: 0 0 40px rgba(0, 201, 176, 0.4); } /* Hold complete/exhale start */
+  50% { transform: scale(1.6); background-color: rgba(0, 201, 176, 0.3); box-shadow: 0 0 40px rgba(0, 201, 176, 0.4); }
+  75% { transform: scale(1); background-color: rgba(0, 201, 176, 0.15); box-shadow: 0 0 20px rgba(0, 201, 176, 0.2); }
+}
+
+.breathe-circle {
+  transition: all 4s linear;
+}
+
+.breathe-circle.inhale {
+  transform: scale(1.6);
+  background-color: rgba(0, 201, 176, 0.3);
+  box-shadow: 0 0 40px rgba(0, 201, 176, 0.4);
+}
+
+.breathe-circle.hold-in {
+  transform: scale(1.6);
+  background-color: rgba(0, 201, 176, 0.3);
+  box-shadow: 0 0 40px rgba(0, 201, 176, 0.4);
+}
+
+.breathe-circle.exhale {
+  transform: scale(1);
+  background-color: rgba(0, 201, 176, 0.15);
+  box-shadow: 0 0 20px rgba(0, 201, 176, 0.2);
+}
+
+.breathe-circle.hold-out {
+  transform: scale(1);
+  background-color: rgba(0, 201, 176, 0.15);
+  box-shadow: 0 0 20px rgba(0, 201, 176, 0.2);
 }
