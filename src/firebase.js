@@ -220,47 +220,49 @@ const handleChat = async (payload) => {
 };
 
 // Global Fetch Interceptor
-const originalFetch = window.fetch;
-window.fetch = async (url, options) => {
-  const urlString = String(url);
-  if (urlString.startsWith('/api/')) {
-    let payload = null;
-    if (options && options.body) {
-      try {
-        payload = JSON.parse(options.body);
-      } catch (e) {
-        // Body is not JSON
+if (typeof window !== 'undefined') {
+  const originalFetch = window.fetch;
+  window.fetch = async (url, options) => {
+    const urlString = String(url);
+    if (urlString.startsWith('/api/')) {
+      let payload = null;
+      if (options && options.body) {
+        try {
+          payload = JSON.parse(options.body);
+        } catch (e) {
+          // Body is not JSON
+        }
+      }
+
+      let resultData = null;
+      if (urlString.includes('/api/suggest-tasks')) {
+        resultData = await handleSuggestTasks(payload);
+      } else if (urlString.includes('/api/analyze-vent')) {
+        resultData = await handleAnalyzeVent(payload);
+      } else if (urlString.includes('/api/generate-insights')) {
+        resultData = await handleGenerateInsights(payload);
+      } else if (urlString.includes('/api/chat')) {
+        resultData = await handleChat(payload);
+      } else if (urlString.includes('/api/auth/change-password')) {
+        resultData = { message: "Password updated successfully!" };
+      } else if (urlString.includes('/api/auth/update-profile')) {
+        resultData = payload;
+      } else if (urlString.includes('/api/auth/me')) {
+        const userData = localStorage.getItem('stressradar_user');
+        resultData = userData ? JSON.parse(userData) : null;
+      }
+
+      if (resultData !== null) {
+        return new Response(JSON.stringify(resultData), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
       }
     }
 
-    let resultData = null;
-    if (urlString.includes('/api/suggest-tasks')) {
-      resultData = await handleSuggestTasks(payload);
-    } else if (urlString.includes('/api/analyze-vent')) {
-      resultData = await handleAnalyzeVent(payload);
-    } else if (urlString.includes('/api/generate-insights')) {
-      resultData = await handleGenerateInsights(payload);
-    } else if (urlString.includes('/api/chat')) {
-      resultData = await handleChat(payload);
-    } else if (urlString.includes('/api/auth/change-password')) {
-      resultData = { message: "Password updated successfully!" };
-    } else if (urlString.includes('/api/auth/update-profile')) {
-      resultData = payload;
-    } else if (urlString.includes('/api/auth/me')) {
-      const userData = localStorage.getItem('stressradar_user');
-      resultData = userData ? JSON.parse(userData) : null;
-    }
-
-    if (resultData !== null) {
-      return new Response(JSON.stringify(resultData), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-  }
-
-  return originalFetch(url, options);
-};
+    return originalFetch(url, options);
+  };
+}
 
 // Auth Client
 class AuthClient {
