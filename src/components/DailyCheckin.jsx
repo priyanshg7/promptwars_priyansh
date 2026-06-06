@@ -10,7 +10,9 @@ import {
   Sparkles, 
   Compass, 
   FlameKindling,
-  Timer
+  Timer,
+  ArrowRight,
+  CheckCircle2
 } from 'lucide-react';
 import { db } from '../firebase';
 
