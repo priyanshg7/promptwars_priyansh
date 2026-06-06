@@ -124,8 +124,7 @@ export default function UserProfile({ profile, onUpdateProfile, onBack }) {
       const response = await fetch('/api/auth/change-password', {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('stressradar_jwt_token')}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ oldPassword, newPassword })
       });
